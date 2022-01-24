@@ -386,9 +386,10 @@ class checklist_class {
             AND eledia.responsibleperson = _responsibleperson.id";
 
         $exams = $DB->get_records_sql($sql);
-
+        $departmentchoices = unserialize(get_config('block_eledia_adminexamdates', 'departmentchoices'));
         $examDateNameOptions = "";
         foreach ($exams as &$exam) {
+            $exam->departmentname = (isset($departmentchoices[$exam->department])) ? $departmentchoices[$exam->department] : $exam->department;
             $examDateNameOptions = $examDateNameOptions . "<option value='" . $exam->id . "'>" . $exam->examname . "</option>";
         }
 

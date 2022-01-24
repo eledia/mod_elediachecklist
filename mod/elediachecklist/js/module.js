@@ -143,7 +143,7 @@ function loadLeftPanelData(examId) {
             $("#exam_name").val(exams[i].examname);
             $("#exam_id").val(exams[i].id);
             $("#dozent").val(exams[i].examiner);
-            $("#fachbereich").val(exams[i].department);
+            $("#fachbereich").val(exams[i].departmentname);
             $("#ansprechpartner_fachgebiet").val(exams[i].contactperson);
             $("#scl_verantwortlicher").val(exams[i].responsibleperson);
             $("#erwartete_anzahl_pruflinge").val(exams[i].numberstudents);
@@ -164,7 +164,7 @@ function changeExamDateDropdown(examId, courseid) {
             $("#exam_name").val(exams[i].examname);
             $("#exam_id").val(exams[i].id);
             $("#dozent").val(exams[i].examiner);
-            $("#fachbereich").val(exams[i].department);
+            $("#fachbereich").val(exams[i].departmentname);
             $("#ansprechpartner_fachgebiet").val(exams[i].contactperson);
             $("#scl_verantwortlicher").val(exams[i].responsibleperson);
             $("#erwartete_anzahl_pruflinge").val(exams[i].numberstudents);
