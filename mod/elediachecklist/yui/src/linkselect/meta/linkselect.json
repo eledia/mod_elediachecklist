@@ -1,0 +1,8 @@
+{
+    "moodle-mod_elediachecklist-linkselect": {
+        "requires": [
+            "node",
+            "event-valuechange"
+        ]
+    }
+}

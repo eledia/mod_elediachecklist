@@ -1,0 +1,10 @@
+{
+    "name": "moodle-mod_elediachecklist-linkselect",
+    "builds": {
+        "moodle-mod_elediachecklist-linkselect": {
+            "jsfiles": [
+                "linkselect.js"
+            ]
+        }
+    }
+}
