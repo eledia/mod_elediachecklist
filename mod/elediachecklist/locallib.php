@@ -377,6 +377,7 @@ class checklist_class {
         //$exams = $DB->get_records("eledia_adminexamdates");
         $sql = "SELECT eledia.id, examrooms, semester, examtimestart, examduration, eledia.department, examname, numberstudents,
             CONCAT(_examiner.firstname, ' ', _examiner.lastname) AS examiner,
+            _examiner.email as examineremail,
             CONCAT(_contactperson.firstname, ' ', _contactperson.lastname) AS contactperson,
             CONCAT(_responsibleperson.firstname, ' ', _responsibleperson.lastname) AS responsibleperson,
             annotationtext, category, eledia.userid, eledia.timecreated, eledia.courseid, eledia.confirmed
