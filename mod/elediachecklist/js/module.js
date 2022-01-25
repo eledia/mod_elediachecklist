@@ -1,4 +1,3 @@
-
 $(function() {
 
     var btn = $("#btnKVB");
@@ -97,7 +96,7 @@ function sendMail(mailType) {
 
     for (let i in exams) {
         if (exams[i].id == $('#exam_id').val()) {
-            contactPersonMail = exams[i].contactpersonemail;
+            contactPersonMail = exams[i].examineremail;
         }
     }
 
