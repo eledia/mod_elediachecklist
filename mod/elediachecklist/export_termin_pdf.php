@@ -150,8 +150,7 @@ $pdf->SetFont('Arial','B',11);
 //Column headers
 $pdf->Ln();
 $pdf->Cell(10, 12, iconv('UTF-8', 'windows-1252', ""), 1, 0, 'C', false, '', 2);
-$pdf->Cell(160, 12, iconv('UTF-8', 'windows-1252', "Bezeichnung"), 1, 0, '', false, '', 2);
-$pdf->Cell(60, 12, iconv('UTF-8', 'windows-1252', "Days related to exam date"), 1, 0, 'C', false, '', 2);
+$pdf->Cell(220, 12, iconv('UTF-8', 'windows-1252', "Bezeichnung"), 1, 0, '', false, '', 2);
 $pdf->Cell(40, 12, iconv('UTF-8', 'windows-1252',  "Datum"), 1, 0, 'C', false, '', 2);
 
 $pdf->SetFont('Arial','',10);
@@ -172,8 +171,8 @@ foreach ($examTopics as &$topic) {
     }
 
     $pdf->Cell(10, 12, iconv('UTF-8', 'windows-1252', $isChecked), 1, 0, 'C', false, '', 2);
-    $pdf->Cell(160, 12, iconv('UTF-8', 'windows-1252', $topic->displaytext), 1, 0, '', false, '', 2);
-    $pdf->Cell(60, 12, iconv('UTF-8', 'windows-1252', $topic->duetime), 1, 0, 'C', false, '', 2);
+    $pdf->Cell(220, 12, iconv('UTF-8', 'windows-1252', $topic->displaytext), 1, 0, '', false, '', 2);
+    //$pdf->Cell(60, 12, iconv('UTF-8', 'windows-1252', $topic->duetime), 1, 0, 'C', false, '', 2);
 
     if ($topic->displaytext == "Endabnahme") {
         $eaDate = $DB->get_record("elediachecklist_item_date", ['examid' => $examid]);
