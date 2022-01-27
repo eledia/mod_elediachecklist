@@ -139,7 +139,7 @@ class checklist_class {
 					</div>
 					<hr>
 						<div class='col-12' style='margin-top:10px'>
-							<input type='button' value='Sende Checkliste' style='width: 100%'/>
+							<input type='button' value='Sende Checkliste' style='width: 100%' onclick='sendMail(\"checkliste\")'/>
 						</div>
 						<div class='col-12' style='margin-top:10px'>
 							<input type='button' value='Erinnerung Klausurvorbereitung' id='btnKVB' onclick='sendMail(\"kvb\")' style='width: 100%'/>

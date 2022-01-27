@@ -102,9 +102,15 @@ function sendMail(mailType) {
         }
     }
 
-    $.get( "send_mail.php?mailType=" + mailType + "&contactPersonMail=" + contactPersonMail + "&examid=" + $('#exam_id').val(), function( data ) {
-        alert("Mail sent to " + contactPersonMail);
-    });
+    if (mailType == "checkliste") {
+        $.get( "sende_checkliste_pdf.php?&contactPersonMail=" + contactPersonMail + "&examid=" + $('#exam_id').val(), function( data ) {
+            alert("Checkliste sent to " + contactPersonMail);
+        });
+    } else {
+        $.get("send_mail.php?mailType=" + mailType + "&contactPersonMail=" + contactPersonMail + "&examid=" + $('#exam_id').val(), function (data) {
+            alert("Mail sent to " + contactPersonMail);
+        });
+    }
 }
 
 function exportPDF_ea(myExamId, comments) {
