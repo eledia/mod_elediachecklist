@@ -84,7 +84,7 @@ class MyTable {
 
             $text .= \html_writer::tag('td', $date->examname);
             //$text .= \html_writer::tag('td', $date->checked);
-            $text .= \html_writer::tag('td', $date->topic);
+            $text .= \html_writer::tag('td', "<a href='tabtermin.php?id=" . get_string('checklist_id', 'elediachecklist') . "&examid=" . $date->examid . "'>" . $date->topic . "</a>");
             $text .= \html_writer::tag('td', $date->topicdate);
             $text .= \html_writer::end_tag('tr');
         }
