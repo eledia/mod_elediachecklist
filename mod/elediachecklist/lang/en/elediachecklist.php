@@ -63,6 +63,7 @@ Mit besten Grüßen<br/>
 Ihr E-Klausurteam';
 
 $string['databaselink'] = '../data/edit.php?d=5';
+$string['checklist_id'] = '82';
 
 $string['addcomments'] = 'Add comments';
 
