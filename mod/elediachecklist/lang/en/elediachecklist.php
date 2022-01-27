@@ -40,10 +40,20 @@ $string['report_button'] = 'Report';
 $string['start_date'] = 'Start date';
 $string['end_date'] = 'End date';
 
+$string['checkliste_mail_subject'] = 'Checkliste';
+$string['checkliste_mail_text'] = 'Sehr geehrte Damen und Herren,<br/><br/>
+
+bitte denken Sie daran, für Ihre Checkliste am {Datum}, {BEZEICHNUNG}.<br/><br/>
+
+<br/>
+Mit besten Grüßen<br/>
+Ihr team';
+
+
 $string['KVB_mail_subject'] = 'E-Klausur: Erinnerung Klausurvorbereitung';
 $string['KVB_mail_text'] = 'Sehr geehrte Damen und Herren,<br/><br/>
 
-bitte denken Sie daran, für Ihre E-Klausur am {Datum}, Modelle und Therapien , demnächst folgende Punkte zu erledigen.<br/><br/>
+bitte denken Sie daran, für Ihre E-Klausur am {Datum}, {BEZEICHNUNG} , demnächst folgende Punkte zu erledigen.<br/><br/>
 
 {ITEMS}
 
@@ -54,7 +64,7 @@ Ihr E-Klausurteam';
 $string['KNB_mail_subject'] = 'E-Klausur: Erinnerung Klausurnachbereitung';
 $string['KNB_mail_text'] = 'Sehr geehrte Damen und Herren,<br/><br/>
 
-wir möchten Sie daran erinnern, dass Sie uns für Ihre E-Klausur am {Datum}, Modelle und Therapien , zu folgenden Punkten Ihrer Termincheckliste noch keine Informationen gegeben haben. Wir bitten Sie, dies nachzuholen.<br/><br/>
+wir möchten Sie daran erinnern, dass Sie uns für Ihre E-Klausur am {Datum}, {BEZEICHNUNG} , zu folgenden Punkten Ihrer Termincheckliste noch keine Informationen gegeben haben. Wir bitten Sie, dies nachzuholen.<br/><br/>
 
 {ITEMS}
 
