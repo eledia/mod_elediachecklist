@@ -172,6 +172,10 @@ if (!empty($confirmexamdate)) {
     $url = new moodle_url('/blocks/eledia_adminexamdates/editexamdate.php', ['newexamdate' => 1]);
     echo $OUTPUT->single_button($url, get_string('newexamdate', 'block_eledia_adminexamdates'), 'post');
 
+// Statistik
+    $statistics = new moodle_url('/blocks/eledia_adminexamdates/statistics.php');
+    echo $OUTPUT->single_button($statistics, get_string('statistics', 'block_eledia_adminexamdates'), 'post');
+
 // 4.1) 'Report button'.
     $urlReport = new moodle_url('/mod/elediachecklist/terminreport.php');
     echo $OUTPUT->single_button($urlReport, get_string('report_button', 'elediachecklist'), 'get');

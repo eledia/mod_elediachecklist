@@ -29,14 +29,15 @@ require_once(dirname(__FILE__).'/locallib.php');
 global $DB, $PAGE, $CFG, $USER;
 
 $topicName = optional_param('name', 0, PARAM_TEXT);
+$topictextmail = optional_param('topictextmail', 0, PARAM_TEXT);
 $topicDate = optional_param('date', 0, PARAM_INT);
 $checklistId = optional_param('checklistId', 0, PARAM_INT);
 $topicId = optional_param('topicId', -1, PARAM_INT);
 
 if ($topicId == -1) {
-    $DB->execute("INSERT INTO {elediachecklist_item} (`checklist`, `displaytext`, `duetime`) VALUES (" . $checklistId . ", '" . $topicName . "', '" . $topicDate . "')");
+    $DB->execute("INSERT INTO {elediachecklist_item} (`checklist`, `displaytext`, `duetime`, `emailtext`) VALUES (" . $checklistId . ", '" . $topicName . "', '" . $topicDate . "', '" . $topictextmail . "')");
 } else {
-    $DB->execute("UPDATE {elediachecklist_item} SET displaytext = ?, duetime = ? WHERE id = ?",[$topicName, $topicDate, $topicId]);
+    $DB->execute("UPDATE {elediachecklist_item} SET displaytext = ?, duetime = ?, emailtext = ? WHERE id = ?",[$topicName, $topicDate, $topictextmail, $topicId]);
 }
 
 echo "Topic added/updated";

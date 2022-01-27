@@ -261,11 +261,11 @@ class checklist_class {
 							<label>DAYS</label>
 							<input type='text' id='topicDays' name='tdays' class='form-control' required>
 							<input type='text' id='topicIdEdit' name='topicIdEdit' class='form-control' required style='display: none'>
+							<input type='text' id='topicCourseId' name='topicCourseId' class='form-control' value='{COURSEID}' required style='display: none'>
 						</div>
 						<div class='form-group'>
 							<label>TEXT MAIL</label>
-							<input type='text' id='topicDays' name='tdays' class='form-control' required>
-							<input type='text' id='topicIdEdit' name='topicIdEdit' class='form-control' required style='display: none'>
+							<input type='text' id='topictextmail' name='topictextmail' class='form-control' required>
 						</div>
 						
 					</div>

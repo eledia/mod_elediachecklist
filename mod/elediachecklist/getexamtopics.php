@@ -84,7 +84,7 @@ if ($examid == -1) {
         }
 
         if ($PAGE->user_is_editing() and is_siteadmin()) {
-            $htmlTopics = $htmlTopics . "<td><div style='cursor: pointer' onclick='prepareEditTopic(" . $topic->id . ",\"" . $topic->displaytext . "\", " . $topic->duetime . ")'>✍</div></td>";
+            $htmlTopics = $htmlTopics . "<td><div style='cursor: pointer' onclick='prepareEditTopic(" . $topic->id . ",\"" . $topic->displaytext . "\", " . $topic->duetime . ", \"" . $topic->emailtext . "\")'>✍</div></td>";
         }
         $htmlTopics = $htmlTopics . "</tr>";
     }

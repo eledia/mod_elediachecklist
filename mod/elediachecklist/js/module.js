@@ -25,10 +25,11 @@ $(function() {
 
     $("#btnAddTopic").click(function(){
 
-        if ($("#topicDate").val() == "" || $("#topicName").val() == "") {
-            alert("ERROR: You must provide Name and Days");
+        if ($("#topicDate").val() == "" || $("#topicName").val() == "" || $("#topictextmail").val() == "") {
+            alert("ERROR: You must provide Name, Days and Text mail");
             $("#topicDays").val("");
             $("#topicName").val("");
+            $("#topictextmail").val("");
             $("#topicIdEdit").val("");
             return;
         }
@@ -37,14 +38,15 @@ $(function() {
         if ($("#topicIdEdit").val() != "")
             topicIdParamer = "&topicId=" + $("#topicIdEdit").val();
 
-        $.get( "addnewtopic.php?name=" + $("#topicName").val() + "&date=" + $("#topicDays").val() + "&checklistId=" + $("#checkListId").html() + topicIdParamer, function( data ) {
+        $.get( "addnewtopic.php?name=" + $("#topicName").val() + "&date=" + $("#topicDays").val() + "&checklistId=" + $("#checkListId").html() + topicIdParamer + "&topictextmail=" + $("#topictextmail").val(), function( data ) {
             $("#topicDays").val("");
             $("#topicName").val("");
             $("#topicIdEdit").val("");
+            $("#topictextmail").val("");
             $("#addTopic").modal("hide");
         });
 
-        setTimeout(() => {  changeExamDateDropdown($('#exam_id').val()); }, 2000);
+        setTimeout(() => {  changeExamDateDropdown($('#exam_id').val(), $('#topicCourseId').val()); }, 2000);
     });
 
     $("#btnAddQMItem").click(function(){
@@ -195,10 +197,11 @@ function changeExamDateDropdown(examId, courseid) {
     }
 }
 
-function prepareEditTopic(id, tname, tdays) {
+function prepareEditTopic(id, tname, tdays, textmail) {
     $("#topicDays").val(tdays);
     $("#topicName").val(tname);
     $("#topicIdEdit").val(id);
+    $("#topictextmail").val(textmail);
     $("#addTopic").modal("show");
 }
 
