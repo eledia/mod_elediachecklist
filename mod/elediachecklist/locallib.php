@@ -414,6 +414,8 @@ class checklist_class {
         //Save ChecklistId
         $this->globalLayout = str_replace("{elediachecklist_ID}", $this->checklist->id, $this->globalLayout);
 
+        $this->tabTerminContent = str_replace("{COURSEID}", $this->course->id, $this->tabTerminContent);
+
         if (is_siteadmin() and $PAGE->user_is_editing()) {
             $this->tabTerminContent = str_replace("{EDIT_DAYS_RELATED_TO_EXAM}", "<th>Days related to exam</th>", $this->tabTerminContent);
             $this->tabTerminContent = str_replace("{EDIT_COLUMN_HEADER}", "<th>Edit<br/>", $this->tabTerminContent);

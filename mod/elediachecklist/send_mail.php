@@ -37,15 +37,18 @@ $mailType = optional_param('mailType', "", PARAM_TEXT);
 $contactpersonmail = optional_param('contactPersonMail', "", PARAM_EMAIL);
 
 $checks = $DB->get_records_sql("SELECT distinct REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, myitem.duetime, 
-DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate FROM {elediachecklist_item} myitem
+DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate,
+exam.examname FROM {elediachecklist_item} myitem
 INNER JOIN {elediachecklist_check} mycheck ON  mycheck.item = myitem.id AND mycheck.teacherid=?
 INNER JOIN {eledia_adminexamdates} exam ON exam.id = mycheck.teacherid ORDER BY myitem.duetime", ['examid' => $examid]);
 
 $checksInMail = "";
 $examDate = "";
+$bezeichnung = "";
 foreach ($checks as $item) {
     $checksInMail = $checksInMail . $item->displaytext . "<br/>";
     $examDate = $item->examdate;
+    $bezeichnung = $item->examname;
 }
 
 //Klausurvorbereitung
@@ -54,6 +57,7 @@ if ($mailType == "kvb") {
     $message = get_string("KVB_mail_text", "elediachecklist" );
     $message = str_replace("{ITEMS}", $checksInMail, $message);
     $message = str_replace("{Datum}", $examDate, $message);
+    $message = str_replace("{BEZEICHNUNG}", $bezeichnung, $message);
     email_to_user(core_user::get_user_by_email($contactpersonmail), $CFG->noreplyaddress, $subject, $message, $message );
 }
 
@@ -63,6 +67,7 @@ if ($mailType == "knb") {
     $message = get_string("KNB_mail_text", "elediachecklist"  );;
     $message = str_replace("{ITEMS}", $checksInMail, $message);
     $message = str_replace("{Datum}", $examDate, $message);
+    $message = str_replace("{BEZEICHNUNG}", $bezeichnung, $message);
     email_to_user(core_user::get_user_by_email($contactpersonmail), $CFG->noreplyaddress, $subject, $message, $message );
 }
 
