@@ -39,8 +39,9 @@ $contactpersonmail = optional_param('contactPersonMail', "", PARAM_EMAIL);
 $checks = $DB->get_records_sql("SELECT distinct REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, myitem.duetime, 
 DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate,
 exam.examname FROM {elediachecklist_item} myitem
-INNER JOIN {elediachecklist_check} mycheck ON  mycheck.item = myitem.id AND mycheck.teacherid=?
-INNER JOIN {eledia_adminexamdates} exam ON exam.id = mycheck.teacherid ORDER BY myitem.duetime", ['examid' => $examid]);
+INNER JOIN {eledia_adminexamdates} exam ON exam.id = ?
+WHERE myitem.id NOT IN (SELECT mycheck.item FROM {elediachecklist_check} mycheck  where mycheck.teacherid=?)
+ORDER BY myitem.duetime", ['examid' => $examid, 'examid_' => $examid]);
 
 $checksInMail = "";
 $examDate = "";
