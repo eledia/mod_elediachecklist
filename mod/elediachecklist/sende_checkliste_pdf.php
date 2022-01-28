@@ -189,7 +189,7 @@ foreach ($examTopics as &$topic) {
     }
 }
 $pdfName = 'Termincheckliste_' . date("Ymd") . '.pdf';
-$pdf->Output($pdfName, 'F');
+$pdf->Output($CFG->dataroot . "/" . $pdfName, 'F');
 
 $checks = $DB->get_records_sql("SELECT distinct REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, myitem.duetime, 
 DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate,
@@ -211,7 +211,7 @@ $subject = get_string("checkliste_mail_subject", "elediachecklist");
 $message = get_string("checkliste_mail_text", "elediachecklist" );
 $message = str_replace("{Datum}", $examDate, $message);
 $message = str_replace("{BEZEICHNUNG}", $bezeichnung, $message);
-email_to_user(core_user::get_user_by_email($contactpersonmail), $CFG->noreplyaddress, $subject, $message, $message, $pdfName, $pdfName );
+email_to_user(core_user::get_user_by_email($contactpersonmail), $CFG->noreplyaddress, $subject, $message, $message, $CFG->dataroot . "/" . $pdfName, $pdfName );
 
 echo "Checkliste SENT to " . $contactpersonmail;
 
