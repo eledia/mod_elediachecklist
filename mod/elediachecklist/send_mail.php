@@ -35,6 +35,7 @@ $checklistid = optional_param('eledia', 0, PARAM_INT);  // Checklist instance ID
 $examid = optional_param('examid', 0, PARAM_INT);
 $mailType = optional_param('mailType', "", PARAM_TEXT);
 $contactpersonmail = optional_param('contactPersonMail', "", PARAM_EMAIL);
+$extraEmail = optional_param('extraEmail', "", PARAM_EMAIL);
 
 $checks = $DB->get_records_sql("SELECT distinct REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, myitem.duetime, 
 DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate,
@@ -72,4 +73,9 @@ if ($mailType == "knb") {
     email_to_user(core_user::get_user_by_email($contactpersonmail), $CFG->noreplyaddress, $subject, $message, $message );
 }
 
-echo "Mail SENT to " . $contactpersonmail;
+if ($extraEmail != null && $extraEmail != "") {
+    email_to_user(core_user::get_user_by_email($extraEmail), $CFG->noreplyaddress, $subject, $message, $message );
+    echo "Mail SENT to " . $contactpersonmail . " and " . $extraEmail;
+} else {
+    echo "Mail SENT to " . $contactpersonmail;
+}

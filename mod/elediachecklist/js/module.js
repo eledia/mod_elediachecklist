@@ -89,6 +89,11 @@ $(function() {
         setTimeout(() => {  location.reload(); }, 2000);
     });
 
+    $("#btnExtraEmail").click(function(){
+        sendMail($('#emailTypeValue').val());
+        $("#extraEmailModal").modal("hide");
+    });
+
 });
 
 function sendMail(mailType) {
@@ -103,12 +108,14 @@ function sendMail(mailType) {
     }
 
     if (mailType == "checkliste") {
-        $.get( "sende_checkliste_pdf.php?&contactPersonMail=" + contactPersonMail + "&examid=" + $('#exam_id').val(), function( data ) {
-            alert("Checkliste sent to " + contactPersonMail);
+        console.log("Sending checkliste");
+        $.get( "sende_checkliste_pdf.php?&contactPersonMail=" + contactPersonMail + "&examid=" + $('#exam_id').val() + "&extraEmail=" + $('#extraEmail').val(), function( data ) {
+            alert(data);
         });
     } else {
-        $.get("send_mail.php?mailType=" + mailType + "&contactPersonMail=" + contactPersonMail + "&examid=" + $('#exam_id').val(), function (data) {
-            alert("Mail sent to " + contactPersonMail);
+        console.log("Sending reminder");
+        $.get("send_mail.php?mailType=" + mailType + "&contactPersonMail=" + contactPersonMail + "&examid=" + $('#exam_id').val() + "&extraEmail=" + $('#extraEmail').val(), function (data) {
+            alert(data);
         });
     }
 }
@@ -226,4 +233,9 @@ function prepareEditEAItem(id, tname) {
 function prepareEditEADate(topicId, examId, date) {
     $("#TerminEADate").val(date);
     $("#editEADate").modal("show");
+}
+
+function showExtraEmailModal() {
+    $("#extraEmail").val("");
+    $("#extraEmailModal").modal("show");
 }

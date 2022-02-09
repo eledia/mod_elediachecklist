@@ -94,6 +94,7 @@ class checklist_class {
 				<div class='col-12'>
 				    <input type='text' id='exam_name' readonly disabled/>
 				    <input type='text' id='exam_id' style='display:none;'/>
+				    <input type='text' id='emailTypeValue' style='display:none;'/>
 					<select style='width: 93%; display: none' id='selectExamDates'>
 						<option value='-1'></option>
 						{EXAMDATENAME_OPTIONS}
@@ -139,13 +140,13 @@ class checklist_class {
 					</div>
 					<hr>
 						<div class='col-12' style='margin-top:10px'>
-							<input type='button' value='Sende Checkliste' style='width: 100%' onclick='sendMail(\"checkliste\")'/>
+							<input type='button' value='Sende Checkliste' style='width: 100%' onclick=\"document.getElementById('emailTypeValue').value='checkliste'; showExtraEmailModal();\"/>
 						</div>
 						<div class='col-12' style='margin-top:10px'>
-							<input type='button' value='Erinnerung Klausurvorbereitung' id='btnKVB' onclick='sendMail(\"kvb\")' style='width: 100%'/>
+							<input type='button' value='Erinnerung Klausurvorbereitung' id='btnKVB' onclick=\"document.getElementById('emailTypeValue').value='kvb'; showExtraEmailModal();\"/>
 						</div>
 						<div class='col-12' style='margin-top:10px'>
-							<input type='button' value='Erinnerung Klausurnachbereitung' id='btnKNB' onclick='sendMail(\"knb\")' style='width: 100%'/>
+							<input type='button' value='Erinnerung Klausurnachbereitung' id='btnKNB' onclick=\"document.getElementById('emailTypeValue').value='knb'; showExtraEmailModal();\"/>
 						</div>
 					</div>
 				</div>
@@ -301,7 +302,32 @@ class checklist_class {
 				</form>
 			</div>
 		</div>
-	</div>";
+	</div>
+	
+    <div id='extraEmailModal' class='modal fade'>
+		<div class='modal-dialog'>
+			<div class='modal-content'>
+				<form id='extraEmail_form'>
+					<div class='modal-header'>						
+						<h4 class='modal-title'>Add additional email address</h4>
+						<button type='button' class='close' data-dismiss='modal' aria-hidden='true'>×</button>
+					</div>
+					<div class='modal-body'>					
+						<div class='form-group'>
+							<label>Additional email address (Optional)</label>
+							<input type='text' id='extraEmail' name='extraEmail' class='form-control' required>
+						</div>
+					</div>
+					<div class='modal-footer'>
+					    <input type='hidden' value='1' name='qmtype'>
+						<input type='button' class='btn btn-default' data-dismiss='modal' value='Cancel'>
+						<button type='button' class='btn btn-success' id='btnExtraEmail'>Send</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>	
+	";
 
     /** @var bool */
     protected $canlinkcourses;

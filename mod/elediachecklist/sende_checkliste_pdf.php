@@ -15,6 +15,7 @@ $checklistid = optional_param('eledia', 0, PARAM_INT);  // Checklist instance ID
 $examid = optional_param('examid', 0, PARAM_INT);
 $mailType = optional_param('mailType', "", PARAM_TEXT);
 $contactpersonmail = optional_param('contactPersonMail', "", PARAM_EMAIL);
+$extraEmail = optional_param('extraEmail', "", PARAM_EMAIL);
 
 class PDF extends FPDF {
 
@@ -213,7 +214,12 @@ $message = str_replace("{Datum}", $examDate, $message);
 $message = str_replace("{BEZEICHNUNG}", $bezeichnung, $message);
 email_to_user(core_user::get_user_by_email($contactpersonmail), $CFG->noreplyaddress, $subject, $message, $message, $CFG->dataroot . "/" . $pdfName, $pdfName );
 
-echo "Checkliste SENT to " . $contactpersonmail;
+if ($extraEmail != null && $extraEmail != "") {
+    email_to_user(core_user::get_user_by_email($extraEmail), $CFG->noreplyaddress, $subject, $message, $message );
+    echo "Checkliste SENT to " . $contactpersonmail . " and " . $extraEmail;
+} else {
+    echo "Checkliste SENT to " . $contactpersonmail;
+}
 
 
 
