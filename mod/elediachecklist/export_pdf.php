@@ -5,7 +5,7 @@ include_once('libs/fpdf.php');
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
-global $CFG;
+global $CFG, $DB;
 
 class export_pdf extends FPDF {
 
@@ -28,7 +28,7 @@ class export_pdf extends FPDF {
         $this->Ln(20);
     }
 
-// Page footer
+    // Page footer
   /*  function Footer()
     {
         // Position at 1.5 cm from bottom
@@ -165,45 +165,111 @@ if ( !empty($_POST) ) {
 
 } else {
 
-    $mysqli = new mysqli($CFG->dbhost, $CFG->dbuser, $CFG->dbpass, $CFG->dbname);
-
-//$display_heading = array('ischecked'=>'ID', 'displaytext'=> 'Item', 'is_checkbox'=> '');
+    // $mysqli = new mysqli($CFG->dbhost, $CFG->dbuser, $CFG->dbpass, $CFG->dbname);
 
     $examid = optional_param('examid', 0, PARAM_INT);
     $type = optional_param('type', '', PARAM_TEXT);
 
-    $result = mysqli_query($mysqli, "SELECT CASE  WHEN mycheck.id_item IS NOT NULL THEN 'OK' ELSE '' END AS ischecked, myitem.displaytext as displaytext, myitem.is_checkbox as is_checkbox FROM mdl_elediachecklist_my_item myitem
-LEFT JOIN mdl_elediachecklist_my_check mycheck ON  mycheck.id_item = myitem.id AND mycheck.id_exam=" . $examid .
-        " WHERE myitem.type='" . $type . "' order by myitem.id") or die("database error:" . mysqli_error($mysqli));
+    $sql  = "SELECT ";
+    $sql .= "myitem.id, ";
+    $sql .= "CASE  WHEN mycheck.id_item IS NOT NULL THEN 'OK' ELSE '' END AS ischecked, ";
+    $sql .= "myitem.displaytext AS displaytext, ";
+    $sql .= "myitem.is_checkbox AS is_checkbox ";
+    $sql .= "FROM mdl_elediachecklist_my_item AS myitem ";
+    $sql .= "LEFT JOIN mdl_elediachecklist_my_check AS mycheck ON (mycheck.id_item = myitem.id AND mycheck.id_exam=" . $examid .") ";
+    $sql .= "WHERE myitem.type='" . $type . "' ";
+    $sql .= "ORDER BY myitem.id ";
+    //$result = mysqli#query($mysqli, $sql) or die("database error:" . mysqli_error($mysqli));
+    $result = $DB->get_records_sql($sql);
+    //echo '<pre>'.print_r($result, true).'</pre>'; die();
 
-//$header = mysqli_query($mysqli, "SHOW columns FROM mdl_elediachecklist_my_item");
+    $buf = array();
+    foreach($result as $one) {
+        $new = new stdClass();
+        $new->ischecked = $one->ischecked;
+        $new->displaytext = $one->displaytext;
+        $new->is_checkbox = $one->is_checkbox;
+        $buf[] = $new;
+    }
+    $result = $buf;
 
     $pdf = new export_pdf('L');
-//$pdf->setPageOrientation('l');
-//header
+    //$pdf->setPageOrientation('l');
+    //header
     $pdf->AddPage();
-//foter page
+    //foter page
     $pdf->AliasNbPages();
 
+    //----- ALT -> $myrow
+    //    $mydozent = mysqli#query($mysqli, "SELECT dozent.firstname, dozent.lastname, exam.examtimestart FROM mdl_eledia_adminexamdates exam, mdl_user dozent
+    //WHERE exam.id = " . $examid . " AND dozent.id = exam.examiner") or die("database error:" . mysqli_error($mysqli));
+    //    $myrow = $mydozent->fetch_row();
+    //----- NEU -> $myrow
+    $sql  = "SELECT ";
+    $sql .= "exam.id, exam.examiner, ";
+    //$sql .= "dozent.firstname, dozent.lastname, ";
+    $sql .= "exam.examtimestart ";
+    $sql .= "FROM {eledia_adminexamdates} AS exam ";//, {user} AS dozent ";
+    $sql .= "WHERE exam.id = ".$examid." ";
+    //$sql .=   "AND dozent.id = exam.examiner ";
+    $exams = $DB->get_records_sql($sql);
+    //echo '<pre>'.print_r($exams, true).'</pre>';
+    // Start
+    $myrow = array(
+            0 => '',
+            1 => '',
+            2 => '',
+    );
+    foreach($exams as $exam) {
+        $sql = "SELECT id, firstname, lastname FROM {user} WHERE id = ".$exam->examiner;
+        $res = $DB->get_records_sql($sql);
+        //echo '<pre>'.print_r($res, true).'</pre>';
+        if(count($res) > 0) {
+            $dozent = array_shift($res);
+            $myrow = array(
+                0 => $dozent->firstname,
+                1 => $dozent->lastname,
+                2 => $exam->examtimestart,
+            );
+            break;
+        }
+    }
+    //echo '<pre>'.print_r($myrow, true).'</pre>';
 
-    $mydozent = mysqli_query($mysqli, "SELECT dozent.firstname, dozent.lastname, exam.examtimestart FROM mdl_eledia_adminexamdates exam, mdl_user dozent
-WHERE exam.id = " . $examid . " AND dozent.id = exam.examiner") or die("database error:" . mysqli_error($mysqli));
-    $myrow = $mydozent->fetch_row();
-
-//Klausur date
+    //Klausur date
     $examdate = $myrow[2];
     $examdate = date('r', $myrow[2]);
-//Get Topic Klausur
-    $klausuritem = mysqli_query($mysqli, "SELECT duetime from mdl_elediachecklist_item where id = 18") or die("database error:" . mysqli_error($mysqli));
-    $klausurrow = $klausuritem->fetch_row();
+    //Get Topic Klausur
+    //----- ALT -> $klausurrow
+    //$klausuritem = mysqli#query($mysqli, "SELECT duetime from mdl_elediachecklist_item where id = 18") or die("database error:" . mysqli_error($mysqli));
+    //$klausurrow = $klausuritem->fetch_row();
+    //----- NEU -> $klausurrow -> $klausurrow[0]
+    $sql = "SELECT id, duetime from mdl_elediachecklist_item where id = 18";
+    $res = $DB->get_records_sql($sql);
+    $klausurrow = array(0 => '');
+    if(isset($res)  &&  count($res) == 1) {
+        $one = array_shift($res);
+        $klausurrow = array(0 => $one->duetime);
+    }
+    //echo '<pre>'.print_r($klausurrow, true).'</pre>';
 
     //Get Exam name
-    $examResult = mysqli_query($mysqli, "SELECT examname from mdl_eledia_adminexamdates where id = " . $examid) or die("database error:" . mysqli_error($mysqli));
-    $examName = $examResult->fetch_row();
+    //----- ALT -> $examName
+    //$examResult = mysqli#query($mysqli, "SELECT examname from mdl_eledia_adminexamdates where id = " . $examid) or die("database error:" . mysqli_error($mysqli));
+    //$examName = $examResult->fetch_row();
+    //----- NEU -> $examName -> $examName[0]
+    $sql = "SELECT id, examname from {eledia_adminexamdates} where id = " . $examid;
+    $res = $DB->get_records_sql($sql);
+    $examName = array(0 => '');
+    if(isset($res)  &&  count($res) == 1) {
+        $one = array_shift($res);
+        $examName = array(0 => $one->examname);
+    }
+    //echo '<pre>'.print_r($examName, true).'</pre>'; die();
 
     $pdf->SetFont('Arial', '', 9);
     $pdf->Cell(80);
-// Title
+    // Title
     $pdf->SetX(10);
     $pdf->Cell(0, 10, iconv('UTF-8', 'windows-1252', 'Klausur:') . ':  ' .$examName[0], 0, 0, 'L');
 
@@ -213,29 +279,37 @@ WHERE exam.id = " . $examid . " AND dozent.id = exam.examiner") or die("database
     $pdf->SetX(200);
     $pdf->Cell(0, 10, iconv('UTF-8', 'windows-1252', 'Dozent') . ': ' . iconv('UTF-8', 'windows-1252', $myrow[0] . " " . $myrow[1]), 0, 0, 'L');
 
-// Line break
-//$pdf->Ln(20);
+    // Line break
+    //$pdf->Ln(20);
 
     $pdf->SetFont('Arial', 'B', 10);
 
     /*foreach($header as $heading) {
         $pdf->Cell(40,12,$display_heading[$heading['Field']],1);
     }*/
-//$pdf->Cell(10,12,'',1);
-//$pdf->Cell(240,12,'Item',1);
+    //$pdf->Cell(10,12,'',1);
+    //$pdf->Cell(240,12,'Item',1);
 
     $mywidth = 10;
     $rownum=1;
+
+
     foreach ($result as $row) {
+
         $pdf->Ln();
         $mycell = 0;
-        if ($row["is_checkbox"] == "0") {
+
+        //if ($row["is_checkbox"] == "0") {
+        if ($row->is_checkbox == "0") {
             $pdf->SetFont('Arial', 'B', 10);
         } else {
             $pdf->SetFont('Arial', '', 9);
         }
-        if ($row["is_checkbox"] == "0") {
-            if ($mycell <= 1) $pdf->Cell(260, 6, iconv('UTF-8', 'windows-1252', $row["displaytext"]), 1);
+
+        //if ($row["is_checkbox"] == "0") {
+        if ($row->is_checkbox == "0") {
+            //if ($mycell <= 1) $pdf->Cell(260, 6, iconv('UTF-8', 'windows-1252', $row["displaytext"]), 1);
+            if ($mycell <= 1) $pdf->Cell(260, 6, iconv('UTF-8', 'windows-1252', $row->displaytext), 1);
         } else {
             foreach ($row as $column) {
                 if ($mycell == 0) $mywidth = 10;
@@ -246,16 +320,14 @@ WHERE exam.id = " . $examid . " AND dozent.id = exam.examiner") or die("database
             }
         }
 
-        /*if ($rownum == 10) {
-            $pdf->Ln();
-            $pdf->SetFont('Arial', 'B', 10);
-            $pdf->Cell(260, 6, iconv('UTF-8', 'windows-1252', 'Bestätigungen'), 1, 0, '', false, '', 2);
-        }*/
         $rownum = $rownum + 1;
     }
+
+
     if ($type == "qm") {
         $pdf->Output('Qualitatsmanagement_' . date("Ymd") . '.pdf', 'I');
     } else {
         $pdf->Output('Endabnahme_' . date("Ymd") . '.pdf', 'I');
     }
+
 }

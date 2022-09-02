@@ -132,20 +132,28 @@ class PDF extends FPDF {
     }
 }
 
-$mysqli = new mysqli($CFG->dbhost, $CFG->dbuser, $CFG->dbpass, $CFG->dbname);
+//$mysqli = new mysqli($CFG->dbhost, $CFG->dbuser, $CFG->dbpass, $CFG->dbname);
 
 $examTopics = $DB->get_records("elediachecklist_item");
 $checkedTopics = $DB->get_records("elediachecklist_check", ['teacherid' => $examid]);
 
-$result = mysqli_query($mysqli, "SELECT * from mdl_eledia_adminexamdates exam where id =" . $examid) or die("database error:". mysqli_error($mysqli));
-
+//----- ALT
+//$result = mysqli#query($mysqli, "SELECT * from mdl_eledia_adminexamdates exam where id =" . $examid) or die("database error:". mysqli_error($mysqli));
+//$examStart = 0;
+//if (mysqli_num_rows($result) > 0) {
+//    // output data of each row
+//    while($row = mysqli_fetch_assoc($result)) {
+//        $examStart = $row["examtimestart"];
+//    }
+//}
+//----- NEU
+$sql = "SELECT * from {eledia_adminexamdates} exam where id =" . $examid;
+$result = $DB->get_records_sql($sql);
 $examStart = 0;
-if (mysqli_num_rows($result) > 0) {
-    // output data of each row
-    while($row = mysqli_fetch_assoc($result)) {
-        $examStart = $row["examtimestart"];
-    }
+foreach($result as $one) {
+    $examStart = $one->examtimestart;
 }
+
 
 $pdf = new PDF('L');
 
@@ -192,12 +200,71 @@ foreach ($examTopics as &$topic) {
 $pdfName = 'Termincheckliste_' . date("Ymd") . '.pdf';
 $pdf->Output($CFG->dataroot . "/" . $pdfName, 'F');
 
-$checks = $DB->get_records_sql("SELECT distinct REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, myitem.duetime, 
-DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, DATE_FORMAT(FROM_UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate,
-exam.examname FROM {elediachecklist_item} myitem
-INNER JOIN {eledia_adminexamdates} exam ON exam.id = ?
-WHERE myitem.id NOT IN (SELECT mycheck.item FROM {elediachecklist_check} mycheck  where mycheck.teacherid=?)
-ORDER BY myitem.duetime", ['examid' => $examid, 'examid_' => $examid]);
+//----- ALT
+//$checks = $DB->get_records_sql("SELECT distinct REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, myitem.duetime,
+//DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate,
+//exam.examname FROM {elediachecklist_item} myitem
+//INNER JOIN {eledia_adminexamdates} exam ON exam.id = ?
+//WHERE myitem.id NOT IN (SELECT mycheck.item FROM {elediachecklist_check} mycheck  where mycheck.teacherid=?)
+//ORDER BY myitem.duetime", ['examid' => $examid, 'examid_' => $examid]);
+//----- NEU
+$sql  = "SELECT ";
+$sql .= "myitem.id, ";
+//$sql .= "DISTINCT REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, ";
+$sql .= "myitem.emailtext, ";
+$sql .= "myitem.duetime, ";
+//$sql .= "DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, ";
+$sql .= "exam.examtimestart, ";
+//$sql .= "DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate, ";
+$sql .= "exam.examname ";
+$sql .= "FROM {elediachecklist_item} AS myitem ";
+$sql .= "INNER JOIN {eledia_adminexamdates} exam ON exam.id = ? ";
+$sql .= "WHERE myitem.id NOT IN (SELECT mycheck.item FROM {elediachecklist_check} AS mycheck WHERE mycheck.teacherid=?) ";
+$sql .= "ORDER BY myitem.duetime ";
+$checks = $DB->get_records_sql($sql, ['examid' => $examid, 'examid_' => $examid]);
+// Ich wuerde sagen der 2. Parameter ('examid_' => $examid) ist falsch.
+// Im SQL wird ja das dann zu: mycheck.teacherid= $examid
+// Aber solange ich es nicht besser weiss, aendere ich hier nichts.
+// ng, 2022-09-02
+
+$buf = array();
+foreach($checks as $check) {
+
+    // FROM#UNIXTIME(exam.examtimestart)             -> 2022-09-02 09:12:59
+    // FROM#UNIXTIME(exam.examtimestart, '%Y-%m-%d') -> 2022-09-02
+
+    //$sql .= "DISTINCT REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, ";
+    $tp = $check->examtimestart + (60 * 60 * 24 * $check->duetime);
+    $date = date('d.m.Y', $tp);
+    $displaytext = str_replace('{Datum}', $date, $check->emailtext);
+    //$displaytext = 'displaytext';
+
+    //$sql .= "DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, ";
+    $tp = $check->examtimestart + (60 * 60 * 24 * $check->duetime);
+    $newdate = date('d.m.Y', $tp);
+    //$newdate = 'newdate';
+
+    //$sql .= "DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate, ";
+    $tp = $check->examtimestart;
+    $examDate = date('d.m.Y', $tp);
+    //$examDate = 'examDate';
+
+    $check->displaytext = $displaytext;
+    $check->newdate     = $newdate;
+    $check->examdate    = $examDate;
+    $buf[] = $check;
+}
+$checks = $buf;
+
+//echo '<pre>'.print_r($checks, true).'</pre>'; die();
+
+
+//----- /NEU
+
+
+$context = context_system::instance();
+$PAGE->set_context($context);
+
 
 $checksInMail = "";
 $examDate = "";
@@ -214,23 +281,17 @@ $message = str_replace("{Datum}", $examDate, $message);
 $message = str_replace("{BEZEICHNUNG}", $bezeichnung, $message);
 email_to_user(core_user::get_user_by_email($contactpersonmail), $CFG->noreplyaddress, $subject, $message, $message, $CFG->dataroot . "/" . $pdfName, $pdfName );
 
+
+unset($coreuser);
 if ($extraEmail != null && $extraEmail != "") {
+    $coreuser = core_user::get_user_by_email($extraEmail);
+    //echo 'gettype = '.gettype($coreuser).'<br />';
+    //echo '<pre>'.print_r($coreuser, true).'</pre>';
+}
+
+if ($extraEmail != null && $extraEmail != ""  &&  isset($coreuser)  &&  $coreuser !== false) {
     email_to_user(core_user::get_user_by_email($extraEmail), $CFG->noreplyaddress, $subject, $message, $message );
     echo "Checkliste SENT to " . $contactpersonmail . " and " . $extraEmail;
 } else {
     echo "Checkliste SENT to " . $contactpersonmail;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-?>

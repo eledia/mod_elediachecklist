@@ -397,10 +397,34 @@ class checklist_class {
         }
 
         //Create dates for Endabnahme items, for each exam
-        $DB->execute("INSERT INTO mdl_elediachecklist_item_date (examid, checkid, checkdate) SELECT id, 7, DATE_ADD(FROM_UNIXTIME(ed.examtimestart), INTERVAL -5 day) FROM mdl_eledia_adminexamdates ed WHERE ed.id NOT IN (SELECT examid FROM mdl_elediachecklist_item_date)");
+
+        // ALT //.
+        //$DB->execute("INSERT INTO mdl_elediachecklist_item_date (examid, checkid, checkdate) SELECT id, 7, DATE_ADD(FROM#UNIXTIME(ed.examtimestart), INTERVAL -5 day) FROM mdl_eledia_adminexamdates ed WHERE ed.id NOT IN (SELECT examid FROM mdl_elediachecklist_item_date)");
+        // NEU //.
+        $sql  = "SELECT ed.id, ed.examtimestart ";
+        $sql .= "FROM {eledia_adminexamdates} AS ed ";
+        $sql .=     "WHERE ed.id NOT IN (SELECT eid.examid FROM {elediachecklist_item_date} AS eid)";
+        $eledia_adminexamdates = $DB->get_records_sql($sql);
+        //echo '<pre>'.print_r($eledia_adminexamdates).'</pre>'; die();
+        foreach($eledia_adminexamdates as $eledia_adminexamdate) {
+            $examid = $eledia_adminexamdate->id;
+            $checkid = 7;
+            // DATE_ADD(FROM#UNIXTIME(ed.examtimestart), INTERVAL '-5 day').
+            // Das ist hier doch schon Unixtime in der Tabelle - oder etwa nicht?
+            $examtimestart = $eledia_adminexamdate->examtimestart;
+            // Jetzt noch minus 5 Tage!
+            $checkdate = $examtimestart - (60 * 60 * 24 * 5);
+            $sql  = "INSERT INTO {elediachecklist_item_date} (examid, checkid, checkdate) ";
+            $sql .= "VALUES (".$examid.", ".$checkid.", ".$checkdate.")";
+            $DB->execute($sql);
+        }
+
 
         //Load exam date names and populate them in the dropdown
         //$exams = $DB->get_records("eledia_adminexamdates");
+
+
+/*
         $sql = "SELECT eledia.id, examrooms, semester, examtimestart, examduration, eledia.department, examname, numberstudents,
             CONCAT(_examiner.firstname, ' ', _examiner.lastname) AS examiner,
             _examiner.email as examineremail,
@@ -411,6 +435,25 @@ class checklist_class {
             WHERE eledia.examiner = _examiner.id
             AND eledia.contactperson = _contactperson.id
             AND eledia.responsibleperson = _responsibleperson.id";
+*/
+/*
+        $sql  = "SELECT ";
+        $sql .= "eledia.id, eledia.department, eledia.userid, eledia.timecreated, eledia.courseid, eledia.confirmed, ";
+        $sql .= "eledia.examrooms, eledia.semester, eledia.examtimestart, eledia.examduration, eledia.examname, ";
+        $sql .= "eledia.numberstudents, eledia.annotationtext, eledia.category, ";
+        $sql .= "_examiner.email as examineremail, ";
+        $sql .= "CONCAT(_examiner.firstname, ' ', _examiner.lastname) AS examiner, ";
+        $sql .= "CONCAT(_contactperson.firstname, ' ', _contactperson.lastname) AS contactperson, ";
+        $sql .= "CONCAT(_responsibleperson.firstname, ' ', _responsibleperson.lastname) AS responsibleperson ";
+        $sql .= "FROM mdl_eledia_adminexamdates eledia, mdl_user _examiner, mdl_user _contactperson, mdl_user _responsibleperson ";
+        $sql .= "WHERE eledia.examiner = _examiner.id ";
+        $sql .= "AND eledia.contactperson = _contactperson.id ";
+        $sql .= "AND eledia.responsibleperson = _responsibleperson.id";
+        // NEU 1
+        //$sql .= "FROM mdl_eledia_adminexamdates AS eledia ";
+        //$sql .= "JOIN mdl_user AS _examiner ON (eledia.examiner = _examiner.id) ";
+        //$sql .= "JOIN mdl_user AS _contactperson ON (eledia.contactperson = _contactperson.id) ";
+        //$sql .= "JOIN mdl_user AS _responsibleperson ON (eledia.responsibleperson = _responsibleperson.id) ";
 
         $exams = $DB->get_records_sql($sql);
         $departmentchoices = unserialize(get_config('block_eledia_adminexamdates', 'departmentchoices'));
@@ -419,6 +462,65 @@ class checklist_class {
             $exam->departmentname = (isset($departmentchoices[$exam->department])) ? $departmentchoices[$exam->department] : $exam->department;
             $examDateNameOptions = $examDateNameOptions . "<option value='" . $exam->id . "'>" . $exam->examname . "</option>";
         }
+*/
+        //-----------------------------------------------------------------------------------
+
+        $sql  = "SELECT ";
+        $sql .= "eledia.id, eledia.department, eledia.userid, eledia.timecreated, eledia.courseid, eledia.confirmed, ";
+        $sql .= "eledia.examrooms, eledia.semester, eledia.examtimestart, eledia.examduration, eledia.examname, ";
+        $sql .= "eledia.numberstudents, eledia.annotationtext, eledia.category, ";
+        $sql .= "eledia.examiner, eledia.contactperson, eledia.responsibleperson ";
+        //$sql .= "_examiner.email as examineremail, ";
+        //$sql .= "CONCAT(_examiner.firstname, ' ', _examiner.lastname) AS examiner, ";
+        //$sql .= "CONCAT(_contactperson.firstname, ' ', _contactperson.lastname) AS contactperson, ";
+        //$sql .= "CONCAT(_responsibleperson.firstname, ' ', _responsibleperson.lastname) AS responsibleperson ";
+        $sql .= "FROM {eledia_adminexamdates} AS eledia ";//, mdl_user _examiner, mdl_user _contactperson, mdl_user _responsibleperson ";
+        //$sql .= "WHERE eledia.examiner = _examiner.id ";
+        //$sql .= "AND eledia.contactperson = _contactperson.id ";
+        //$sql .= "AND eledia.responsibleperson = _responsibleperson.id";
+
+        $exams = $DB->get_records_sql($sql);
+        $departmentchoices = unserialize(get_config('block_eledia_adminexamdates', 'departmentchoices'));
+        $examDateNameOptions = "";
+        foreach ($exams as &$exam) {
+
+            $examiner_id = $exam->examiner;
+            $contactperson_id = $exam->contactperson;
+            $responsibleperson_id = $exam->responsibleperson;
+            //echo 'examiner_id = '.$examiner_id.'<br />';
+            //echo 'contactperson_id = '.$contactperson_id.'<br />';
+            //echo 'responsibleperson_id = '.$responsibleperson_id.'<br />';
+
+            if (!isset($examiner_id)  ||  !isset($contactperson_id)  ||  !isset($responsibleperson_id)) {
+                continue;
+            }
+
+            $sql = "SELECT * FROM {user} WHERE id IN (".$examiner_id.", ".$contactperson_id.", ".$responsibleperson_id.")";
+            $res = $DB->get_records_sql($sql);
+            //echo '<pre>'.print_r($res, true).'</pre>';
+            $exam->examineremail = '';
+            $exam->examiner      = '';
+            if(isset($res[$examiner_id])) {
+                $exam->examineremail = $res[$examiner_id]->email;
+                $exam->examiner      = trim($res[$examiner_id]->firstname.' '.$res[$examiner_id]->lastname);
+            }
+            $exam->contactperson = '';
+            if(isset($res[$contactperson_id])) {
+                $exam->contactperson = trim($res[$contactperson_id]->firstname.' '.$res[$contactperson_id]->lastname);
+            }
+            $exam->responsibleperson = '';
+            if(isset($res[$responsibleperson_id])) {
+                $exam->responsibleperson = trim($res[$responsibleperson_id]->firstname.' '.$res[$responsibleperson_id]->lastname);
+            }
+
+            //echo '<pre>'.print_r($exam, true).'</pre>';
+
+            $exam->departmentname = (isset($departmentchoices[$exam->department])) ? $departmentchoices[$exam->department] : $exam->department;
+            $examDateNameOptions = $examDateNameOptions . "<option value='" . $exam->id . "'>" . $exam->examname . "</option>";
+        }
+
+        //-----------------------------------------------------------------------------------
+
 
         $this->globalLayout = str_replace("{EXAMDATENAME_OPTIONS}", $examDateNameOptions, $this->globalLayout);
         $this->globalLayout = str_replace("{EXAM_LIST}", json_encode($exams), $this->globalLayout);

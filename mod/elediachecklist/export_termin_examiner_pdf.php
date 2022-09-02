@@ -116,7 +116,7 @@ class PDF extends FPDF
     }
 }
 
-$mysqli = new mysqli($CFG->dbhost, $CFG->dbuser, $CFG->dbpass, $CFG->dbname);
+//$mysqli = new mysqli($CFG->dbhost, $CFG->dbuser, $CFG->dbpass, $CFG->dbname);
 
 $examid = optional_param('examid', 0, PARAM_INT);
 
@@ -124,15 +124,23 @@ $examid = optional_param('examid', 0, PARAM_INT);
 $examTopics = $DB->get_records_sql("SELECT * FROM {elediachecklist_item} WHERE id IN (3,5,8,9,10,15,17)");
 $checkedTopics = $DB->get_records("elediachecklist_check", ['teacherid' => $examid]);
 
-$result = mysqli_query($mysqli, "SELECT * from mdl_eledia_adminexamdates exam where id =" . $examid) or die("database error:". mysqli_error($mysqli));
-
+//----- ALT
+//$result = mysqli#query($mysqli, "SELECT * from mdl_eledia_adminexamdates exam where id =" . $examid) or die("database error:". mysqli_error($mysqli));
+//$examStart = 0;
+//if (mysqli_num_rows($result) > 0) {
+//    // output data of each row
+//    while($row = mysqli_fetch_assoc($result)) {
+//        $examStart = $row["examtimestart"];
+//    }
+//}
+//----- NEU
+$sql = "SELECT * from {eledia_adminexamdates} exam where id =" . $examid;
+$result = $DB->get_records_sql($sql);
 $examStart = 0;
-if (mysqli_num_rows($result) > 0) {
-    // output data of each row
-    while($row = mysqli_fetch_assoc($result)) {
-        $examStart = $row["examtimestart"];
-    }
+foreach($result as $one) {
+    $examStart = $one->examtimestart;
 }
+
 
 $pdf = new PDF('L');
 

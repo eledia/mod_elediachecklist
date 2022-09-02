@@ -30,6 +30,8 @@ $string['tablehead_examname'] = 'Exam name';
 $string['tablehead_checked'] = 'Checked';
 $string['tablehead_topic'] = 'Bezeichnung';
 $string['tablehead_topicdate'] = 'Datum';
+$string['tablehead_id'] = 'ID';
+$string['tablehead_examid'] = 'Exam ID';
 
 $string['Dozent'] = 'Dozent';
 $string['Klausur'] = 'Klausur';

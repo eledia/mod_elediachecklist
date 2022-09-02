@@ -50,6 +50,8 @@ class MyTable {
         } else {
             $myexams = $DB->get_records("eledia_adminexamdates", ['responsibleperson' => $USER->id]);
         }
+
+/*
         $sql = "";
         $count = 0;
         foreach($myexams as $me) {
@@ -63,8 +65,39 @@ class MyTable {
 
             $count = count + 1;
         }
+*/
+
+        $sql = "";
+        $count = 0;
+        foreach($myexams as $me) {
+            if ($count > 0)
+                $sql = $sql . " UNION ";
+            $sql = $sql . "SELECT 
+            item.id, 
+            " . $me->id . " as examid, 
+            (SELECT examname FROM {eledia_adminexamdates} AS exam WHERE exam.id = " . $me->id . ") AS ExamName, 
+            CASE WHEN ch.id IS NOT NULL THEN 'X' ELSE '-' END AS Checked, 
+            item.displaytext AS Topic,
+            
+            (SELECT examtimestart FROM {eledia_adminexamdates} AS exam WHERE exam.id = " . $me->id . ") AS tp_examtimestart, 
+            (SELECT examtimestart FROM {eledia_adminexamdates} AS exam WHERE exam.id = " . $me->id . ") AS TopicDate, 
+            item.duetime 
+            
+            FROM {elediachecklist_item} AS item
+            LEFT JOIN {elediachecklist_check} AS ch ON (item.id = ch.item AND ch.teacherid = " . $me->id . ") 
+            WHERE ch.id IS null 
+            ";
+
+            //$count = count + 1;
+            $count++;
+        }
+
+        //echo $sql.'<br /><br />>';
 
         $dates = $DB->get_recordset_sql($sql);
+
+        //echo '<pre>'.print_r($dates, true).'</pre>'; die();
+
         $tableheaditems = ['id', 'examid', 'examname', 'topic', 'topicdate'];
         $text = \html_writer::start_tag('table', array('id' => 'examdatestable', 'class' => 'table table-striped table-bordered table-hover table-sm', 'style' => 'width:100%'));
         $text .= \html_writer::start_tag('thead', array('class' => 'thead-light'));
@@ -82,10 +115,15 @@ class MyTable {
             $text .= \html_writer::tag('td', $date->id);
             $text .= \html_writer::tag('td', $date->examid);
 
+            // DATE_FORMAT(DATE_ADD(FROM_UNIXTIME(floor((SELECT examtimestart FROM {eledia_adminexamdates} AS exam WHERE exam.id = " . $me->id . "))), INTERVAL item.duetime DAY),'%d.%m.%Y') AS TopicDate
+            $tp = $date->tp_examtimestart + (60 * 60 * 24 * $date->duetime);
+            $topicdate = date('d.m.Y', $tp);
+
             $text .= \html_writer::tag('td', $date->examname);
             //$text .= \html_writer::tag('td', $date->checked);
             $text .= \html_writer::tag('td', "<a href='tabtermin.php?id=" . get_string('checklist_id', 'elediachecklist') . "&examid=" . $date->examid . "'>" . $date->topic . "</a>");
-            $text .= \html_writer::tag('td', $date->topicdate);
+            //$text .= \html_writer::tag('td', $date->topicdate);
+            $text .= \html_writer::tag('td', $topicdate);
             $text .= \html_writer::end_tag('tr');
         }
 

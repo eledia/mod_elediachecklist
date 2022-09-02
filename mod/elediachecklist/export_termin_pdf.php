@@ -132,7 +132,7 @@ function text_of_id($elediachecklist_item_id) {
 }
 
 
-$mysqli = new mysqli($CFG->dbhost, $CFG->dbuser, $CFG->dbpass, $CFG->dbname);
+//$mysqli = new mysqli($CFG->dbhost, $CFG->dbuser, $CFG->dbpass, $CFG->dbname);
 
 $examid = optional_param('examid', 0, PARAM_INT);
 
@@ -141,18 +141,79 @@ $checkedTopics = $DB->get_records("elediachecklist_check", ['teacherid' => $exam
 //echo '<pre>'.print_r($examTopics, true).'</pre>'; die();
 //echo '<pre>'.print_r($checkedTopics, true).'</pre>'; //die();
 
-$result = mysqli_query($mysqli, "SELECT * from mdl_eledia_adminexamdates exam where id =" . $examid) or die("database error:". mysqli_error($mysqli));
+//----- ALT
+//$result = mysqli#query($mysqli, "SELECT * from mdl_eledia_adminexamdates exam where id =" . $examid) or die("database error:". mysqli_error($mysqli));
 //echo '<pre>'.print_r($result, true).'</pre>'; die();
-
+//$examStart = 0;
+//if (mysqli_num_rows($result) > 0) {
+//    // output data of each row
+//    while($row = mysqli_fetch_assoc($result)) {
+//        $examStart = $row["examtimestart"];
+//    }
+//}
+//----- NEU
+$sql = "SELECT * from {eledia_adminexamdates} exam where id =" . $examid;
+$result = $DB->get_records_sql($sql);
 $examStart = 0;
-if (mysqli_num_rows($result) > 0) {
-    // output data of each row
-    while($row = mysqli_fetch_assoc($result)) {
-        $examStart = $row["examtimestart"];
-    }
+foreach($result as $one) {
+    $examStart = $one->examtimestart;
 }
 
+//============================================================================
 
+/*
+$sql  = "SELECT ";
+$sql .= "myitem.id, ";
+//$sql .= "DISTINCT REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, ";
+$sql .= "myitem.emailtext, ";
+$sql .= "myitem.duetime, ";
+//$sql .= "DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, ";
+$sql .= "exam.examtimestart, ";
+//$sql .= "DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate, ";
+$sql .= "exam.examname ";
+$sql .= "FROM {elediachecklist_item} AS myitem ";
+$sql .= "INNER JOIN {eledia_adminexamdates} exam ON exam.id = ? ";
+$sql .= "WHERE myitem.id NOT IN (SELECT mycheck.item FROM {elediachecklist_check} AS mycheck WHERE mycheck.teacherid=?) ";
+$sql .= "ORDER BY myitem.duetime ";
+$checks = $DB->get_records_sql($sql, ['examid' => $examid, 'examid_' => $examid]);
+// Ich wuerde sagen der 2. Parameter ('examid_' => $examid) ist falsch.
+// Im SQL wird ja das dann zu: mycheck.teacherid= $examid
+// Aber solange ich es nicht besser weiss, aendere ich hier nichts.
+// ng, 2022-09-02
+
+$buf = array();
+foreach($checks as $check) {
+
+    // FROM#UNIXTIME(exam.examtimestart)             -> 2022-09-02 09:12:59
+    // FROM#UNIXTIME(exam.examtimestart, '%Y-%m-%d') -> 2022-09-02
+
+    //$sql .= "DISTINCT REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, ";
+    $tp = $check->examtimestart + (60 * 60 * 24 * $check->duetime);
+    $date = date('d.m.Y', $tp);
+    $displaytext = str_replace('{Datum}', $date, $check->emailtext);
+    //$displaytext = 'displaytext';
+
+    //$sql .= "DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, ";
+    $tp = $check->examtimestart + (60 * 60 * 24 * $check->duetime);
+    $newdate = date('d.m.Y', $tp);
+    //$newdate = 'newdate';
+
+    //$sql .= "DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate, ";
+    $tp = $check->examtimestart;
+    $examDate = date('d.m.Y', $tp);
+    //$examDate = 'examDate';
+
+    $check->displaytext = $displaytext;
+    $check->newdate     = $newdate;
+    $check->examdate    = $examDate;
+    $buf[] = $check;
+}
+$checks = $buf;
+
+//echo '<pre>'.print_r($checks, true).'</pre>'; die();
+*/
+
+//============================================================================
 
 // create new PDF document
 $pdf = new myPDF('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
