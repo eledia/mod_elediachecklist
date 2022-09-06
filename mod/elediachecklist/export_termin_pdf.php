@@ -10,14 +10,14 @@ class myPDF extends TCPDF {
 
     //Page header
     public function Header() {
-        $this->SetFont('helvetica', 'B', 11);
+        //$this->SetFont('helvetica', 'B', 11);
         // Move to the right
-        $this->Cell(60);
+        //$this->Cell(60);
         // Title
         //$type = optional_param('type', '', PARAM_TEXT);
-        $this->Cell(60, 10, iconv('UTF-8', 'windows-1252', 'Termincheckliste'), 1, 0, 'C');
+        //$this->Cell(60, 10, iconv('UTF-8', 'windows-1252', 'Termincheckliste'), 1, 0, 'C');
         // Line break
-        $this->Ln(20);
+        //$this->Ln(20);
     }
 
     // Page footer
@@ -25,7 +25,7 @@ class myPDF extends TCPDF {
         // Position at 15 mm from bottom
         $this->SetY(-15);
         // Set font
-        $this->SetFont('helvetica', '', 11);
+        $this->SetFont('helvetica', 'I', 11);
         // Page number
         $txt = 'Seite '.$this->getAliasNumPage().' / '.$this->getAliasNbPages();
         $this->Cell(0, 10, $txt, 0, false, 'C', 0, '', 0, false, 'T', 'M');
@@ -132,8 +132,6 @@ function text_of_id($elediachecklist_item_id) {
 }
 
 
-//$mysqli = new mysqli($CFG->dbhost, $CFG->dbuser, $CFG->dbpass, $CFG->dbname);
-
 $examid = optional_param('examid', 0, PARAM_INT);
 
 $examTopics = $DB->get_records("elediachecklist_item");
@@ -141,23 +139,49 @@ $checkedTopics = $DB->get_records("elediachecklist_check", ['teacherid' => $exam
 //echo '<pre>'.print_r($examTopics, true).'</pre>'; die();
 //echo '<pre>'.print_r($checkedTopics, true).'</pre>'; //die();
 
-//----- ALT
-//$result = mysqli#query($mysqli, "SELECT * from mdl_eledia_adminexamdates exam where id =" . $examid) or die("database error:". mysqli_error($mysqli));
-//echo '<pre>'.print_r($result, true).'</pre>'; die();
-//$examStart = 0;
-//if (mysqli_num_rows($result) > 0) {
-//    // output data of each row
-//    while($row = mysqli_fetch_assoc($result)) {
-//        $examStart = $row["examtimestart"];
-//    }
-//}
-//----- NEU
+// Startwerte
+$properties = array(
+    'examiner'       => '', // Dozent
+    'examname'       => '', // Bezeichnung Klausur
+    'examtimestart'  => '', // Klausurtermin (d.m.Y)
+    'numberstudents' => '', // Erwartete Anzahl Prueflinge
+    'scl_name'       => '', // Name SCL Betreuer
+    'duration'       => '', // Zeitraum der Raumbuchung
+);
+
 $sql = "SELECT * from {eledia_adminexamdates} exam where id =" . $examid;
 $result = $DB->get_records_sql($sql);
 $examStart = 0;
 foreach($result as $one) {
+
     $examStart = $one->examtimestart;
+
+    $sql = "SELECT id, firstname, lastname FROM {user} WHERE id = ".$one->examiner;
+    $res = $DB->get_records_sql($sql);
+    $examiner = '';
+    if(isset($res)  &&  is_array($res)) {
+        $val = array_shift($res);
+        $examiner = trim($val->firstname.' '.$val->lastname);
+    }
+
+    $sql = "SELECT id, firstname, lastname FROM {user} WHERE id = ".$one->responsibleperson;
+    $res = $DB->get_records_sql($sql);
+    $sclname = '';
+    if(isset($res)  &&  is_array($res)) {
+        $val = array_shift($res);
+        $sclname = trim($val->firstname.' '.$val->lastname);
+    }
+
+    $properties['examiner'] = $examiner;
+    $properties['examname'] = $one->examname;
+    $properties['examtimestart'] = date('d.m.Y', $one->examtimestart);
+    $properties['numberstudents'] = $one->numberstudents;
+    $properties['scl_name'] = $sclname;
+    $properties['duration'] = date('H:i', $one->examtimestart).' - '.date('H:i', ($one->examtimestart + ($one->examduration*60)));
 }
+
+//echo '<pre>'.print_r($properties, true).'</pre>'; die();
+//echo '<pre>'.print_r($result, true).'</pre>'; //die();
 
 //============================================================================
 
@@ -216,7 +240,8 @@ $checks = $buf;
 //============================================================================
 
 // create new PDF document
-$pdf = new myPDF('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+//$pdf = new myPDF('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+$pdf = new myPDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
 // set margins
 $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
@@ -229,8 +254,6 @@ $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 // set image scale factor
 //$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 
-$pdf->SetFont('helvetica', '', 11);
-
 // set color for background // white
 $pdf->SetFillColor(255, 255, 255);
 // set color for text // black
@@ -239,12 +262,64 @@ $pdf->SetTextColor(0, 0, 0);
 // add a page
 $pdf->AddPage();
 
+
+$pdf->SetFont('helvetica', 'B', 18);
+
+$html  = get_string('ueberschrift_01', 'elediachecklist');
+$html .= '<br />';
+$pdf->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=true, $align='');
+
+
+$pdf->SetFont('helvetica', '', 11);
+
 $html  = '';
-$html .= '<table border="1" cellpadding="8" cellspacing="0" width="100%">';
+$html.= '<table border="1" cellpadding="0" cellspacing="0"><tr><td>';
+$html .= '<table border="0" cellpadding="4" cellspacing="0" width="100%">';
+$html .= '<tr>';
+$html .= '<td align="left" width="100%">'.get_string('dozent', 'elediachecklist').': '.$properties['examiner'].'</td>';
+$html .= '</tr>';
+$html .= '<tr>';
+$html .= '<td align="left" width="100%">'.get_string('bezeichnung_klausur', 'elediachecklist').': '.$properties['examname'].'</td>';
+$html .= '</tr>';
+$html .= '</table>';
+$html .= '</td></tr></table>';
+$html .= '<br />';
+$pdf->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=true, $align='');
+
+
+$html  = '';
+$html .= '<table border="0" cellpadding="2" cellspacing="0" width="100%">';
+$html .= '<tr>';
+$html .= '<td align="left" width="20%">'.get_string('klausurtermin', 'elediachecklist').':</td>';
+$html .= '<td align="left" width="30%">'.$properties['examtimestart'].'</td>';
+$html .= '<td align="left" width="20%">'.get_string('erwartetet_anzahl_prueflinge', 'elediachecklist').':</td>';
+$html .= '<td align="left" width="20%">'.$properties['numberstudents'].'</td>';
+$html .= '<td align="left" width="10%">&nbsp;</td>';
+$html .= '</tr>';
+$html .= '<tr>';
+$html .= '<td align="left" width="20%">'.get_string('name_scl_betreuer', 'elediachecklist').':</td>';
+$html .= '<td align="left" width="30%">'.$properties['scl_name'].'</td>';
+$html .= '<td align="left" width="20%">'.get_string('zeitraum_der_raumbuchung', 'elediachecklist').':</td>';
+$html .= '<td align="left" width="20%">'.$properties['duration'].'</td>';
+$html .= '<td align="left" width="10%">&nbsp;</td>';
+$html .= '</tr>';
+$html .= '</table>';
+$html .= '<br /><br /><br />';
+$pdf->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=true, $align='');
+
+
+$html  = get_string('text_pdf_intro', 'elediachecklist');
+$html .= '<br />';
+$pdf->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=true, $align='');
+
+
+
+$html  = '';
+$html .= '<table border="1" cellpadding="6" cellspacing="0" width="100%">';
 $html .= '<tr>';
 $html .= '<td align="center" width="5%">&nbsp;</td>';
-$html .= '<td align="left" width="80%">Bezeichnung</td>';
-$html .= '<td align="center" width="15%">Datum</td>';
+$html .= '<td align="left" width="83%">Bezeichnung</td>';
+$html .= '<td align="center" width="12%">Datum</td>';
 $html .= '</tr>';
 foreach ($examTopics as &$topic) {
 
@@ -280,8 +355,8 @@ foreach ($examTopics as &$topic) {
 
     $html .= '<tr>';
     $html .= '<td align="center" width="5%">'.$isChecked.'</td>';
-    $html .= '<td align="left" width="80%">'.$second.'</td>';
-    $html .= '<td align="center" width="15%">'.$third.'</td>';
+    $html .= '<td align="left" width="83%">'.$second.'</td>';
+    $html .= '<td align="center" width="12%">'.$third.'</td>';
     $html .= '</tr>';
 }
 $html .= '</table>';

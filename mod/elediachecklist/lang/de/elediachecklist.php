@@ -21,6 +21,21 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['ueberschrift_01'] = 'Ihre E-Klausur Termincheckliste';
+$string['dozent'] = 'Dozent_in';
+$string['bezeichnung_klausur'] = 'Bezeichnung Klausur';
+$string['klausurtermin'] = 'Klausurtermin';
+$string['name_scl_betreuer'] = 'Name SCL Betreuer_in';
+$string['erwartetet_anzahl_prueflinge'] = 'Erwartete Anzahl Prüflinge';
+$string['zeitraum_der_raumbuchung'] = 'Zeitraum der Raumbuchung';
+
+$string['text_pdf_intro'] = 'Sehr geehrte Damen und Herren,<br /><br />'
+.'wir möchten gewährleisten, dass Ihre E-Klausur organisatorisch und technisch reibungslos abläuft. '
+.'Zu diesem Zweck haben wir für Sie die folgende Checkliste mit verbindlichen Aufgaben erstellt. '
+.'Bitte stellen Sie sicher, dass die benannten Aufgaben von Ihrer Seite zu den angegebenen Terminen erfüllt werden.';
+
+//-----
+
 $string['text_pdf_01'] = '<b>Beschreibung der Prüfungskonfiguration</b><br /><br />'
 .'Teilen Sie uns bitte die gewünschte Prüfungskonfiguration mit. Z.B.'
 .'<ul style="">'
