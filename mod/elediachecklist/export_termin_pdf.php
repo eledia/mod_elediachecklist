@@ -159,7 +159,7 @@ foreach($result as $one) {
     $sql = "SELECT id, firstname, lastname FROM {user} WHERE id = ".$one->examiner;
     $res = $DB->get_records_sql($sql);
     $examiner = '';
-    if(isset($res)  &&  is_array($res)) {
+    if(isset($res)  &&  is_array($res)  &&  count($res) > 0) {
         $val = array_shift($res);
         $examiner = trim($val->firstname.' '.$val->lastname);
     }
@@ -167,7 +167,7 @@ foreach($result as $one) {
     $sql = "SELECT id, firstname, lastname FROM {user} WHERE id = ".$one->responsibleperson;
     $res = $DB->get_records_sql($sql);
     $sclname = '';
-    if(isset($res)  &&  is_array($res)) {
+    if(isset($res)  &&  is_array($res)  &&  count($res) > 0) {
         $val = array_shift($res);
         $sclname = trim($val->firstname.' '.$val->lastname);
     }
