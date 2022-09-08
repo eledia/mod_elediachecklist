@@ -78,7 +78,8 @@ if ($examid == -1) {
 
         if (is_siteadmin() && $topic->displaytext == "Endabnahme") {
             $eaDate = $DB->get_record("elediachecklist_item_date", ['examid' => $examid]);
-            $htmlTopics = $htmlTopics . "<td>" . date("d.m.Y", strtotime($eaDate->checkdate)) . "<span onclick=\"prepareEditEADate(" . $topic->id . ", " . $examid . ",'" . date('Y-m-d', strtotime($eaDate->checkdate)) . "')\">  📆 </span></td>";
+            //$htmlTopics = $htmlTopics . "<td>" . date("d.m.Y", strtotime($eaDate->checkdate)) . "<span onclick=\"prepareEditEADate(" . $topic->id . ", " . $examid . ",'" . date('Y-m-d', strtotime($eaDate->checkdate)) . "')\">  📆 </span></td>";
+            $htmlTopics = $htmlTopics . "<td>" . date("d.m.Y", $eaDate->checkdate) . "<span onclick=\"prepareEditEADate(" . $topic->id . ", " . $examid . ",'" . date('Y-m-d', $eaDate->checkdate) . "')\">  📆 </span></td>";
         } else {
             $htmlTopics = $htmlTopics . "<td>" . date('d.m.Y', strtotime($topic->duetime . ' day', strtotime($topicDate))) . "</td>";
         }

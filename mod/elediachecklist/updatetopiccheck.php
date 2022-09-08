@@ -36,7 +36,7 @@ $idItem = optional_param('idItem', 0, PARAM_INT);
 
 if ($checklistType == "") {
     if ($checked) {
-        $DB->execute("INSERT INTO {elediachecklist_check} (`item`, `userid`, `teachermark`, `teachertimestamp`, `teacherid`) VALUES (" . $topicId . ", 0, 1, '1633993780', " . $examId . ")");
+        $DB->execute("INSERT INTO {elediachecklist_check} (item, userid, teachermark, teachertimestamp, teacherid) VALUES (" . $topicId . ", 0, 1, '1633993780', " . $examId . ")");
     } else {
         $DB->execute("DELETE FROM {elediachecklist_check} WHERE  item=" . $topicId . " AND teacherId=" . $examId);
     }

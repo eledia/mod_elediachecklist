@@ -345,7 +345,8 @@ foreach ($examTopics as &$topic) {
     if ($topic->displaytext == "Endabnahme") {
         $eaDate = $DB->get_record("elediachecklist_item_date", ['examid' => $examid]);
         //$third = iconv('UTF-8', 'windows-1252', date("d.m.Y", strtotime($eaDate->checkdate)));
-        $third = date("d.m.Y", strtotime($eaDate->checkdate));
+        $third = date("d.m.Y", $eaDate->checkdate);
+        //$third = date("d.m.Y", 1662364800);
         //$pdf->Cell(40, 12, iconv('UTF-8', 'windows-1252', date("d.m.Y", strtotime($eaDate->checkdate))), 1, 0, 'C', false, '', 2);
     } else {
         $third = date('d.m.Y', strtotime($topic->duetime . ' day', strtotime($topicDate)));
