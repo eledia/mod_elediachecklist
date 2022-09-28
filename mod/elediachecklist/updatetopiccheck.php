@@ -36,6 +36,7 @@ $idItem = optional_param('idItem', 0, PARAM_INT);
 
 if ($checklistType == "") {
     if ($checked) {
+        $DB->execute("DELETE FROM {elediachecklist_check} WHERE  item=" . $topicId . " AND teacherId=" . $examId);
         $DB->execute("INSERT INTO {elediachecklist_check} (item, userid, teachermark, teachertimestamp, teacherid) VALUES (" . $topicId . ", 0, 1, '1633993780', " . $examId . ")");
     } else {
         $DB->execute("DELETE FROM {elediachecklist_check} WHERE  item=" . $topicId . " AND teacherId=" . $examId);
@@ -44,6 +45,7 @@ if ($checklistType == "") {
 
 if ($checklistType == "qm" || $checklistType == "ea") {
     if ($checked) {
+        $DB->execute("DELETE FROM {elediachecklist_my_check} WHERE  id_item=" . $topicId . " AND id_exam=" . $examId);
         $DB->execute("INSERT INTO {elediachecklist_my_check} (id_item, id_exam) VALUES (" . $topicId . ", " . $examId . ")");
     } else {
         $DB->execute("DELETE FROM {elediachecklist_my_check} WHERE  id_item=" . $topicId . " AND id_exam=" . $examId);

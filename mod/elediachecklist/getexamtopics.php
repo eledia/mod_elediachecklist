@@ -33,6 +33,8 @@ $checklistid = optional_param('eledia', 0, PARAM_INT);  // Checklist instance ID
 $examid = optional_param('examId', 0, PARAM_INT);
 $examStart = optional_param('examStart', 0, PARAM_INT);
 $courseid = optional_param('courseid', 0, PARAM_INT);
+//----- NEU
+$checklist = optional_param('checklist', 0, PARAM_INT);
 
 $url = new moodle_url('/mod/elediachecklist/tabprobleme.php');
 
@@ -41,9 +43,13 @@ $userid = 0;
 $context = context_course::instance($courseid);
 $PAGE->set_context($context);
 
-$examTopics = $DB->get_records("elediachecklist_item");
-$htmlTopics = "";
+//----- ALT
+//$examTopics = $DB->get_records("elediachecklist_item");
+//----- NEU
+$sql = "SELECT * FROM {elediachecklist_item} WHERE checklist = ".$checklist." ORDER BY position ASC";
+$examTopics = $DB->get_records_sql($sql);
 
+$htmlTopics = '';
 
 // TODO Add 'examid' field to mdl_checklist_check table and use it instead teacherid
 $checkedTopics = $DB->get_records("elediachecklist_check", ['teacherid' => $examid]);

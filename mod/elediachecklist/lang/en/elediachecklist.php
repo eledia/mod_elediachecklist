@@ -43,14 +43,6 @@ $string['start_date'] = 'Start date';
 $string['end_date'] = 'End date';
 
 $string['checkliste_mail_subject'] = 'Checkliste';
-$string['checkliste_mail_text'] = 'Sehr geehrte Damen und Herren,<br/><br/>
-
-bitte denken Sie daran, für Ihre Checkliste am {Datum}, {BEZEICHNUNG}.<br/><br/>
-
-<br/>
-Mit besten Grüßen<br/>
-Ihr team';
-
 
 $string['KVB_mail_subject'] = 'E-Klausur: Erinnerung Klausurvorbereitung';
 $string['KVB_mail_text'] = 'Sehr geehrte Damen und Herren,<br/><br/>
@@ -59,7 +51,7 @@ bitte denken Sie daran, für Ihre E-Klausur am {Datum}, {BEZEICHNUNG} , demnäch
 
 {ITEMS}
 
-<br/>A
+<br/>
 Mit besten Grüßen<br/>
 Ihr E-Klausurteam';
 
@@ -407,4 +399,41 @@ $string['text_pdf_08'] = '<b>Mitteilung an E-Klausurteam: Klausureinsicht und Ko
 
 $string['text_pdf_09'] = '<b>Notenschlüssel bereitgestellt</b><br /><br />'
 .'Senden Sie uns Ihren Notenschlüssel zu. Diesen müssen mir zusammen mit Ihrer Klausur archivieren.';
+
+
+
+//$string['checkliste_mail_text_02'] = 'Sehr geehrte Damen und Herren,<br/><br/>'
+//.'bitte denken Sie daran, für Ihre Checkliste am {Datum}, {BEZEICHNUNG}.<br/><br/>'
+//.'<br/>'
+//.'Mit besten Grüßen<br/>'
+//.'Ihr E-Klausurteam<br /><br />'
+//.'E-Klausuren an der Universität Kassel<br />'
+//.'https://www.uni-kassel.de/go/eklausur';
+
+$string['checkliste_mail_text'] = 'Sehr geehrte Damen und Herren,<br/><br/>'
+.'wir möchten gewährleisten, dass Ihre E-Klausur organisatorisch und technisch reibungslos abläuft. '
+.'Zu diesem Zweck haben wir für Sie eine Checkliste mit verbindlichen Aufgaben erstellt. '
+.'Bitte stellen Sie sicher, dass die benannten Aufgaben von Ihrer Seite zu den angegebenen Terminen erfüllt werden. '
+.'Sie finden die Checkliste im Anhang.<br /><br />'
+.'Mit besten Grüßen<br/>'
+.'Ihr E-Klausurteam<br /><br />'
+.'E-Klausuren an der Universität Kassel<br />'
+.'https://www.uni-kassel.de/go/eklausur';
+
+//$string['checkliste_mail_text_03'] = 'Sehr geehrte Damen und Herren,<br/><br/>'
+//.'in der Anlage übersenden wir Ihnen für Ihre E-Klausur "{BEZEICHNUNG} am {Datum} Ihre Termincheckliste zur Klausur.<br /><br />" '
+//.'Mit besten Grüßen<br/>'
+//.'Ihr E-Klausurteam<br /><br />'
+//.'E-Klausuren an der Universität Kassel<br />'
+//.'https://www.uni-kassel.de/go/eklausur';
+
+$string['erinnerung_kvb'] = 'E-Mail, Erinnerung Klausurvorbereitung';
+$string['erinnerung_kvb_beschreibung'] = 'Wählen Sie die Punkte aus der Termincheckliste aus, '
+.'die in der E-Mail aufgeführt werden sollen.';
+
+$string['erinnerung_knb'] = 'E-Mail, Erinnerung Klausurnachbereitung';
+$string['erinnerung_knb_beschreibung'] = 'Wählen Sie die Punkte aus der Termincheckliste aus, '
+.'die in der E-Mail aufgeführt werden sollen.';
+
+
 

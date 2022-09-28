@@ -1,11 +1,11 @@
 <?php
 
-//include_once("connection.php");
-include_once('libs/fpdf.php');
+//include_once('libs/fpdf.php');
 
 global $DB, $PAGE, $CFG, $USER;
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once(dirname(dirname(dirname(__FILE__))).'/lib/tcpdf/tcpdf.php');
 require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
 require_once($CFG->dirroot.'/mod/elediachecklist/lib.php');
@@ -17,13 +17,12 @@ $mailType = optional_param('mailType', "", PARAM_TEXT);
 $contactpersonmail = optional_param('contactPersonMail', "", PARAM_EMAIL);
 $extraEmail = optional_param('extraEmail', "", PARAM_EMAIL);
 
-class PDF extends FPDF {
+class PDF extends TCPDF {
 
-// Page header
     function Header()
     {
-        // Logo
-        //$this->Image('pix/logo.png',10,-1,70);
+        //----- ALT
+        /*
         $this->SetFont('Arial','B',11);
         // Move to the right
         $this->Cell(80);
@@ -32,38 +31,31 @@ class PDF extends FPDF {
         $this->Cell(80, 10, iconv('UTF-8', 'windows-1252', 'Termincheckliste'), 1, 0, 'C');
         // Line break
         $this->Ln(20);
+        */
+        //----- NEU
+        // Kein Header
     }
 
-// Page footer
+
     function Footer()
     {
-    /*    // Arial italic 8
-        $this->SetFont('Arial','I',8);
-
-        if ($this->PageNo() == 2) {
-            $this->SetY(-40);
-            $this->Cell(0, 10, '______________________________________________________________________', 0, 0, 'C');
-            $this->SetY(-35);
-            $this->Cell(0, 10, iconv('UTF-8', 'windows-1252', get_string("unterschrift_eklausurteam", "elediachecklist")), 0, 0, 'C');
-
-            $this->SetY(-30);
-            $this->Cell(0, 10, iconv('UTF-8', 'windows-1252', get_string("Place_pdf", "elediachecklist") . " " . date('d.m.Y', time())) , 0, 0, 'C');
-
-
-            $this->SetY(-25);
-            $this->Cell(0, 10, iconv('UTF-8', 'windows-1252',get_string("Es_wird_vom_Fachgebiet", "elediachecklist")), 0, 0, 'C');
-
-        }
-        // Position at 1.5 cm from bottom
-        $this->SetY(-15);
-        // Page number
-        $this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');*/
+        //----- ALT
+        /*
         // Position at 1.5 cm from bottom
         $this->SetY(-15);
         // Arial italic 8
         $this->SetFont('Arial','I',8);
         // Page number
         $this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');
+        */
+        //----- NEU
+        // Position at 15 mm from bottom
+        $this->SetY(-15);
+        // Set font
+        $this->SetFont('helvetica', 'I', 11);
+        // Page number
+        $txt = 'Seite '.$this->getAliasNumPage().' / '.$this->getAliasNbPages();
+        $this->Cell(0, 10, $txt, 0, false, 'C', 0, '', 0, false, 'T', 'M');
     }
 
     //Cell with horizontal scaling if text is too wide
@@ -132,29 +124,65 @@ class PDF extends FPDF {
     }
 }
 
-//$mysqli = new mysqli($CFG->dbhost, $CFG->dbuser, $CFG->dbpass, $CFG->dbname);
 
-$examTopics = $DB->get_records("elediachecklist_item");
+// DATEN //.
+
+$sql = "SELECT * FROM {elediachecklist_item} ORDER BY position ASC";
+$examTopics = $DB->get_records_sql($sql);
+
+
+// Startwerte
+$properties = array(
+        'examiner'       => '', // Dozent
+        'examname'       => '', // Bezeichnung Klausur
+        'examtimestart'  => '', // Klausurtermin (d.m.Y)
+        'numberstudents' => '', // Erwartete Anzahl Prueflinge
+        'scl_name'       => '', // Name SCL Betreuer
+        'duration'       => '', // Zeitraum der Raumbuchung
+);
+
 $checkedTopics = $DB->get_records("elediachecklist_check", ['teacherid' => $examid]);
 
-//----- ALT
-//$result = mysqli#query($mysqli, "SELECT * from mdl_eledia_adminexamdates exam where id =" . $examid) or die("database error:". mysqli_error($mysqli));
-//$examStart = 0;
-//if (mysqli_num_rows($result) > 0) {
-//    // output data of each row
-//    while($row = mysqli_fetch_assoc($result)) {
-//        $examStart = $row["examtimestart"];
-//    }
-//}
-//----- NEU
+
 $sql = "SELECT * from {eledia_adminexamdates} exam where id =" . $examid;
 $result = $DB->get_records_sql($sql);
 $examStart = 0;
+//foreach($result as $one) {
+//    $examStart = $one->examtimestart;
+//}
 foreach($result as $one) {
+
     $examStart = $one->examtimestart;
+
+    $sql = "SELECT id, firstname, lastname FROM {user} WHERE id = ".$one->examiner;
+    $res = $DB->get_records_sql($sql);
+    $examiner = '';
+    if(isset($res)  &&  is_array($res)  &&  count($res) > 0) {
+        $val = array_shift($res);
+        $examiner = trim($val->firstname.' '.$val->lastname);
+    }
+
+    $sql = "SELECT id, firstname, lastname FROM {user} WHERE id = ".$one->responsibleperson;
+    $res = $DB->get_records_sql($sql);
+    $sclname = '';
+    if(isset($res)  &&  is_array($res)  &&  count($res) > 0) {
+        $val = array_shift($res);
+        $sclname = trim($val->firstname.' '.$val->lastname);
+    }
+
+    $properties['examiner'] = $examiner;
+    $properties['examname'] = $one->examname;
+    $properties['examtimestart'] = date('d.m.Y', $one->examtimestart);
+    $properties['numberstudents'] = $one->numberstudents;
+    $properties['scl_name'] = $sclname;
+    $properties['duration'] = date('H:i', $one->examtimestart).' - '.date('H:i', ($one->examtimestart + ($one->examduration*60)));
 }
 
 
+// PDF //.
+
+//----- ALT
+/*
 $pdf = new PDF('L');
 
 //header
@@ -197,17 +225,137 @@ foreach ($examTopics as &$topic) {
         $pdf->Cell(40, 12, iconv('UTF-8', 'windows-1252', date('d.m.Y', strtotime($topic->duetime . ' day', strtotime($topicDate)))), 1, 0, 'C', false, '', 2);
     }
 }
+
+$pdfName = 'Termincheckliste_' . date("Ymd") . '.pdf';
+$pdf->Output($CFG->dataroot . "/" . $pdfName, 'F');
+*/
+//----- NEU
+$pdf = new PDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+// set margins
+$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+// set color for background // white
+$pdf->SetFillColor(255, 255, 255);
+// set color for text // black
+$pdf->SetTextColor(0, 0, 0);
+
+// add a page
+$pdf->AddPage();
+
+
+$pdf->SetFont('helvetica', 'B', 18);
+
+$html  = get_string('ueberschrift_01', 'elediachecklist');
+$html .= '<br />';
+$pdf->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=true, $align='');
+
+
+$pdf->SetFont('helvetica', '', 11);
+
+$html  = '';
+$html.= '<table border="1" cellpadding="0" cellspacing="0"><tr><td>';
+$html .= '<table border="0" cellpadding="4" cellspacing="0" width="100%">';
+$html .= '<tr>';
+$html .= '<td align="left" width="100%">'.get_string('dozent', 'elediachecklist').': '.$properties['examiner'].'</td>';
+$html .= '</tr>';
+$html .= '<tr>';
+$html .= '<td align="left" width="100%">'.get_string('bezeichnung_klausur', 'elediachecklist').': '.$properties['examname'].'</td>';
+$html .= '</tr>';
+$html .= '</table>';
+$html .= '</td></tr></table>';
+$html .= '<br />';
+$pdf->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=true, $align='');
+
+
+$html  = '';
+$html .= '<table border="0" cellpadding="2" cellspacing="0" width="100%">';
+$html .= '<tr>';
+$html .= '<td align="left" width="20%">'.get_string('klausurtermin', 'elediachecklist').':</td>';
+$html .= '<td align="left" width="30%">'.$properties['examtimestart'].'</td>';
+$html .= '<td align="left" width="20%">'.get_string('erwartetet_anzahl_prueflinge', 'elediachecklist').':</td>';
+$html .= '<td align="left" width="20%">'.$properties['numberstudents'].'</td>';
+$html .= '<td align="left" width="10%">&nbsp;</td>';
+$html .= '</tr>';
+$html .= '<tr>';
+$html .= '<td align="left" width="20%">'.get_string('name_scl_betreuer', 'elediachecklist').':</td>';
+$html .= '<td align="left" width="30%">'.$properties['scl_name'].'</td>';
+$html .= '<td align="left" width="20%">'.get_string('zeitraum_der_raumbuchung', 'elediachecklist').':</td>';
+$html .= '<td align="left" width="20%">'.$properties['duration'].'</td>';
+$html .= '<td align="left" width="10%">&nbsp;</td>';
+$html .= '</tr>';
+$html .= '</table>';
+$html .= '<br /><br /><br />';
+$pdf->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=true, $align='');
+
+
+$html  = get_string('text_pdf_intro', 'elediachecklist');
+$html .= '<br />';
+$pdf->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=true, $align='');
+
+
+$html  = '';
+$html .= '<table border="1" cellpadding="6" cellspacing="0" width="100%">';
+$html .= '<tr>';
+$html .= '<td align="center" width="5%">&nbsp;</td>';
+$html .= '<td align="left" width="83%">Bezeichnung</td>';
+$html .= '<td align="center" width="12%">Datum</td>';
+$html .= '</tr>';
+foreach ($examTopics as &$topic) {
+
+    $txt_of_id = txt_of_id($topic->id);
+    if(trim($txt_of_id) == '') {
+        continue;
+    }
+
+    $topicDate = date('r', $examStart);
+    $r = strtotime($examStart );
+    $s =  strtotime('-1 day', strtotime($examStart ));
+    $f= date('d.m.Y', strtotime('-1 day', strtotime($examStart )));
+
+    $isChecked = "-";
+    foreach ($checkedTopics as &$checked) {
+        if ($checked->item == $topic->id)
+            $isChecked = "X";
+    }
+
+    $second = $txt_of_id;
+    //$second = iconv('UTF-8', 'windows-1252', $second);
+
+    $third = '-';
+    if($examid > 0) {
+        if ($topic->displaytext == "Endabnahme") {
+            $eaDate = $DB->get_record("elediachecklist_item_date", ['examid' => $examid]);
+            if (isset($eaDate->checkdate)) {
+                $third = date("d.m.Y", $eaDate->checkdate);
+            }
+        } else {
+            if (isset($topic->duetime)) {
+                $third = date('d.m.Y', strtotime($topic->duetime . ' day', strtotime($topicDate)));
+            }
+        }
+    }
+
+    $html .= '<tr>';
+    $html .= '<td align="center" width="5%">'.$isChecked.'</td>';
+    $html .= '<td align="left" width="83%">'.$second.'</td>';
+    $html .= '<td align="center" width="12%">'.$third.'</td>';
+    $html .= '</tr>';
+}
+$html .= '</table>';
+$pdf->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=true, $align='');
+
+//Close and output PDF document
+//$pdf->Output('Termincheckliste_' . date("Ymd") . '.pdf', 'I');
 $pdfName = 'Termincheckliste_' . date("Ymd") . '.pdf';
 $pdf->Output($CFG->dataroot . "/" . $pdfName, 'F');
 
-//----- ALT
-//$checks = $DB->get_records_sql("SELECT distinct REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, myitem.duetime,
-//DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate,
-//exam.examname FROM {elediachecklist_item} myitem
-//INNER JOIN {eledia_adminexamdates} exam ON exam.id = ?
-//WHERE myitem.id NOT IN (SELECT mycheck.item FROM {elediachecklist_check} mycheck  where mycheck.teacherid=?)
-//ORDER BY myitem.duetime", ['examid' => $examid, 'examid_' => $examid]);
-//----- NEU
+
+
+// E-MAIL-VERSAND //.
+
 $sql  = "SELECT ";
 $sql .= "myitem.id, ";
 //$sql .= "DISTINCT REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, ";
@@ -258,13 +406,8 @@ $checks = $buf;
 
 //echo '<pre>'.print_r($checks, true).'</pre>'; die();
 
-
-//----- /NEU
-
-
 $context = context_system::instance();
 $PAGE->set_context($context);
-
 
 $checksInMail = "";
 $examDate = "";
@@ -275,22 +418,42 @@ foreach ($checks as $item) {
     $bezeichnung = $item->examname;
 }
 
+// IMMER:
+// An $contactpersonmail -> Der Ansprechpartner (s. module.js)
 $subject = get_string("checkliste_mail_subject", "elediachecklist");
 $message = get_string("checkliste_mail_text", "elediachecklist" );
-$message = str_replace("{Datum}", $examDate, $message);
+$message = str_replace("{Datum}",       $examDate,    $message);
 $message = str_replace("{BEZEICHNUNG}", $bezeichnung, $message);
 email_to_user(core_user::get_user_by_email($contactpersonmail), $CFG->noreplyaddress, $subject, $message, $message, $CFG->dataroot . "/" . $pdfName, $pdfName );
 
+//unset($coreuser);
+//if ($extraEmail != null  &&  $extraEmail != ""  &&  filter_var($extraEmail, FILTER_VALIDATE_EMAIL) ) {
+//    $coreuser = core_user::get_user_by_email($extraEmail);
+//    //echo 'gettype = '.gettype($coreuser).'<br />';
+//    //echo '<pre>'.print_r($coreuser, true).'</pre>';
+//}
 
-unset($coreuser);
-if ($extraEmail != null && $extraEmail != "") {
-    $coreuser = core_user::get_user_by_email($extraEmail);
-    //echo 'gettype = '.gettype($coreuser).'<br />';
-    //echo '<pre>'.print_r($coreuser, true).'</pre>';
-}
+//if ($extraEmail != null && $extraEmail != ""  &&  isset($coreuser)  &&  $coreuser !== false) {
+if ($extraEmail != null  &&  $extraEmail != ""  &&  filter_var($extraEmail, FILTER_VALIDATE_EMAIL) ) {
+    // OPTIONAL:An $extraMail -> Muss als Nutzer vorhanden sein
 
-if ($extraEmail != null && $extraEmail != ""  &&  isset($coreuser)  &&  $coreuser !== false) {
-    email_to_user(core_user::get_user_by_email($extraEmail), $CFG->noreplyaddress, $subject, $message, $message );
+    $userextra = core_user::get_user_by_email($extraEmail);
+    if(!$userextra) {
+        $userextra = new stdClass();
+        $userextra->id = guest_user()->id;
+        $userextra->lang = current_language();
+        $userextra->firstaccess = time();
+        $userextra->mnethostid = $CFG->mnet_localhost_id;
+        $userextra->email = $extraEmail;
+        $userextra->username = 'Guest';
+        $userextra->mailformat = 1;
+    }
+
+    $message = get_string("checkliste_mail_text", "elediachecklist" );
+    $message = str_replace("{Datum}",       $examDate,    $message);
+    $message = str_replace("{BEZEICHNUNG}", $bezeichnung, $message);
+    //email_to_user(core_user::get_user_by_email($extraEmail), $CFG->noreplyaddress, $subject, $message, $message, $CFG->dataroot . "/" . $pdfName, $pdfName);
+    email_to_user($userextra, $CFG->noreplyaddress, $subject, $message, $message, $CFG->dataroot . "/" . $pdfName, $pdfName);
     echo "Checkliste SENT to " . $contactpersonmail . " and " . $extraEmail;
 } else {
     echo "Checkliste SENT to " . $contactpersonmail;

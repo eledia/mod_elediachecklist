@@ -78,9 +78,20 @@ class export_pdf extends FPDF {
                 $this->SetY(130);
                 $this->Cell(0, 10, "Bemerkungen:", 0, 0, 'L');
 
+
                 $this->SetFont('Arial', '', 9);
                 $this->SetY(137);
-                $this->MultiCell(0, 5, iconv('UTF-8', 'windows-1252',base64_decode($_COOKIE["commentsEA"])), 0, 'L', false);
+                $inp = '';
+                if(isset($_REQUEST['commentsEA'])) {
+                    //$inp = base64_decode($_REQUEST["commentsEA"]);
+                    $inp = $_REQUEST["commentsEA"];
+                }
+                else if(isset($_COOKIE['commentsEA'])) {
+                    //$inp = base64_decode($_COOKIE["commentsEA"]);
+                    $inp = $_COOKIE["commentsEA"];
+                }
+                $this->MultiCell(0, 5, iconv('UTF-8', 'windows-1252', $inp), 0, 'L', false);
+
 
                 $this->SetY(160);
                 $this->Cell(0, 10, iconv('UTF-8', 'windows-1252', get_string("Place_pdf", "elediachecklist") . ", " . date('d.m.Y', time())), 0, 0, 'L');
@@ -158,18 +169,22 @@ class export_pdf extends FPDF {
     }
 }
 
-if ( !empty($_POST) ) {
+
+if (isset($_REQUEST['commentsEA']) ) {
     $cookie_name = "commentsEA";
-    $cookie_value = $_POST["commentsEA"];
-    setcookie($cookie_name, base64_encode($cookie_value), time() + (86400 * 30), "/"); // 86400 = 1 day
+    $cookie_value = $_REQUEST["commentsEA"];
+    //setcookie($cookie_name, base64_encode($cookie_value), time() + (86400 * 30), "/"); // 86400 = 1 day
+}
 
-} else {
-
-    // $mysqli = new mysqli($CFG->dbhost, $CFG->dbuser, $CFG->dbpass, $CFG->dbname);
 
     $examid = optional_param('examid', 0, PARAM_INT);
     $type = optional_param('type', '', PARAM_TEXT);
 
+    // ACHTUNG: {elediachecklist_my_check} hat aus irgendwelchen Gruenden(!) manchmal dieselben Eintraege,
+    // so dass der 'LEFT JOIN nicht immer funktioniert'.
+    // Moodle beschwert sich:
+    // Did you remember to make the first column something unique in your call to get_records? Duplicate value '49' found in column 'id'.
+    // Erste Massnahme: Alle Checkboxen deaktivieren/aktivieren, 2022-09-23, ngeiges
     $sql  = "SELECT ";
     $sql .= "myitem.id, ";
     $sql .= "CASE  WHEN mycheck.id_item IS NOT NULL THEN 'OK' ELSE '' END AS ischecked, ";
@@ -179,9 +194,11 @@ if ( !empty($_POST) ) {
     $sql .= "LEFT JOIN mdl_elediachecklist_my_check AS mycheck ON (mycheck.id_item = myitem.id AND mycheck.id_exam=" . $examid .") ";
     $sql .= "WHERE myitem.type='" . $type . "' ";
     $sql .= "ORDER BY myitem.id ";
-    //$result = mysqli#query($mysqli, $sql) or die("database error:" . mysqli_error($mysqli));
     $result = $DB->get_records_sql($sql);
     //echo '<pre>'.print_r($result, true).'</pre>'; die();
+    //echo $sql.'<br /><br />>';
+    //echo '<pre>'.print_r($result, true).'</pre>';
+    //echo 'SQL 1'; die();
 
     $buf = array();
     foreach($result as $one) {
@@ -218,7 +235,7 @@ if ( !empty($_POST) ) {
     $myrow = array(
             0 => '',
             1 => '',
-            2 => '',
+            2 => 0, // tp
     );
     foreach($exams as $exam) {
         $sql = "SELECT id, firstname, lastname FROM {user} WHERE id = ".$exam->examiner;
@@ -274,7 +291,11 @@ if ( !empty($_POST) ) {
     $pdf->Cell(0, 10, iconv('UTF-8', 'windows-1252', 'Klausur:') . ':  ' .$examName[0], 0, 0, 'L');
 
     $pdf->SetX(110);
-    $pdf->Cell(0, 10, iconv('UTF-8', 'windows-1252', 'Klausurdatum:') . ': ' . date('d.m.y', strtotime($klausurrow[0] . ' day', strtotime($examdate))), 0, 0, 'L');
+    $inp = iconv('UTF-8', 'windows-1252', 'Klausurdatum:') . ': ';
+    if (isset($myrow[2]) && $myrow[2] != 0) {
+        $inp .= date('d.m.y', strtotime($klausurrow[0] . ' day', strtotime($examdate)));
+    }
+    $pdf->Cell(0, 10, $inp, 0, 0, 'L');
 
     $pdf->SetX(200);
     $pdf->Cell(0, 10, iconv('UTF-8', 'windows-1252', 'Dozent') . ': ' . iconv('UTF-8', 'windows-1252', $myrow[0] . " " . $myrow[1]), 0, 0, 'L');
@@ -329,5 +350,3 @@ if ( !empty($_POST) ) {
     } else {
         $pdf->Output('Endabnahme_' . date("Ymd") . '.pdf', 'I');
     }
-
-}

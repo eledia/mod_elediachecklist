@@ -103,9 +103,14 @@ function sendMail(mailType) {
 
     for (let i in exams) {
         if (exams[i].id == $('#exam_id').val()) {
-            contactPersonMail = exams[i].examineremail;
+            //console.log(exams[i]);
+            // examineremail      -> Dozent
+            // contactpersonemail -> Ansprechpartner
+            //contactPersonMail = exams[i].examineremail;
+            contactPersonMail = exams[i].contactpersonemail;
         }
     }
+    //console.log("Stop"); return false;
 
     if (mailType == "checkliste") {
         console.log("Sending checkliste");
@@ -169,6 +174,7 @@ function loadLeftPanelData(examId) {
     }
 }
 
+
 function changeExamDateDropdown(examId, courseid) {
     var exams = JSON.parse($("#examList").html());
 
@@ -194,6 +200,7 @@ function changeExamDateDropdown(examId, courseid) {
             });
         }
     }
+
     if (examId == -1) { //Show empty table if an examId is not provided and clear fields
         $.get( "getexamtopics.php?checklist=" + $("#checkListId").html() + "&examId=" + examId + "&examStart=" + $("#datumraw").val() + "&courseid=" + courseid, function( data ) {
             $("#topicList").html(data);
@@ -209,6 +216,7 @@ function changeExamDateDropdown(examId, courseid) {
         $("#datumraw").val("");
     }
 }
+
 
 function prepareEditTopic(id, tname, tdays, textmail) {
     $("#topicDays").val(tdays);

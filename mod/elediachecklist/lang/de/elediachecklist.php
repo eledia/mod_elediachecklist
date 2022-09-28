@@ -118,3 +118,37 @@ $string['text_pdf_08'] = '<b>Mitteilung an E-Klausurteam: Klausureinsicht und Ko
 $string['text_pdf_09'] = '<b>Notenschlüssel bereitgestellt</b><br /><br />'
 .'Senden Sie uns Ihren Notenschlüssel zu. Diesen müssen mir zusammen mit Ihrer Klausur archivieren.';
 
+
+//$string['checkliste_mail_text_02'] = 'Sehr geehrte Damen und Herren,<br/><br/>'
+//.'bitte denken Sie daran, für Ihre Checkliste am {Datum}, {BEZEICHNUNG}.<br/><br/>'
+//.'<br/>'
+//.'Mit besten Grüßen<br/>'
+//.'Ihr E-Klausurteam<br /><br />'
+//.'E-Klausuren an der Universität Kassel<br />'
+//.'https://www.uni-kassel.de/go/eklausur';
+
+$string['checkliste_mail_text'] = 'Sehr geehrte Damen und Herren,<br/><br/>'
+.'wir möchten gewährleisten, dass Ihre E-Klausur organisatorisch und technisch reibungslos abläuft. '
+.'Zu diesem Zweck haben wir für Sie eine Checkliste mit verbindlichen Aufgaben erstellt. '
+.'Bitte stellen Sie sicher, dass die benannten Aufgaben von Ihrer Seite zu den angegebenen Terminen erfüllt werden. '
+.'Sie finden die Checkliste im Anhang.<br /><br />'
+.'Mit besten Grüßen<br/>'
+.'Ihr E-Klausurteam<br /><br />'
+.'E-Klausuren an der Universität Kassel<br />'
+.'https://www.uni-kassel.de/go/eklausur';
+
+//$string['checkliste_mail_text_03'] = 'Sehr geehrte Damen und Herren,<br/><br/>'
+//.'in der Anlage übersenden wir Ihnen für Ihre E-Klausur "{BEZEICHNUNG} am {Datum} Ihre Termincheckliste zur Klausur.<br /><br />" '
+//.'Mit besten Grüßen<br/>'
+//.'Ihr E-Klausurteam<br /><br />'
+//.'E-Klausuren an der Universität Kassel<br />'
+//.'https://www.uni-kassel.de/go/eklausur';
+
+$string['erinnerung_klausurvorbereitung'] = 'E-Mail, Erinnerung Klausurvorbereitung';
+$string['erinnerung_klausurvorbereitung_beschreibung'] = 'Wählen Sie die Punkte aus der Termincheckliste aus, '
+.'die in der E-Mail aufgeführt werden sollen.';
+
+$string['erinnerung_klausurnachbereitung'] = 'E-Mail, Erinnerung Klausurnachbereitung';
+$string['erinnerung_klausurnachbereitung_beschreibung'] = 'Wählen Sie die Punkte aus der Termincheckliste aus, '
+.'die in der E-Mail aufgeführt werden sollen.';
+

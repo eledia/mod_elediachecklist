@@ -44,9 +44,9 @@ function xmldb_elediachecklist_install() {
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (7, 'Checkpunkte vor und nach der Endabnahme', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (8, 'Kurs für Endabnahme sichtbar geschaltet', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (9, 'Kursformat: Verborgene Abschnitte vollständig unsichtbar.', 1, 'qm')", null);
-    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (10, 'Testeinstellungen: Safeexambrowser aktivieren.\r\n', 1, 'qm')", null);
-    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (11, 'Testeinstellungen: 2 Versuche -> letzter Versuch -> basiert auf vorherigem -> 1 Versuch\r\n', 1, 'qm')", null);
-    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (12, 'Checkpunkte vor der Klausur\r\n', 0, 'qm')", null);
+    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (10, 'Testeinstellungen: Safeexambrowser aktivieren.', 1, 'qm')", null);
+    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (11, 'Testeinstellungen: 2 Versuche -> letzter Versuch -> basiert auf vorherigem -> 1 Versuch', 1, 'qm')", null);
+    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (12, 'Checkpunkte vor der Klausur', 0, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (13, 'Etiketten erzeugen', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (14, ?, 1, 'qm')", ['Prüfen: Nachteilsausgleich zu berücksichtigen?']);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (15, 'SEB-Konfiguration ausgewählt', 1, 'qm')", null);
@@ -68,7 +68,7 @@ function xmldb_elediachecklist_install() {
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (31, 'Bei Dateiablage oder Popup-Ressourcen Reboot der Clients zwischen den Gruppen', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (32, 'Checkpunkte direkt nach der Klausur', 0, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (33, ?, 1, 'qm')", ['Archive vorhanden? -> signieren']);
-    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (34, 'Teilnehmer*innen stilllegen.\r\n', 1, 'qm')", null);
+    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (34, 'Teilnehmer*innen stilllegen.', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (35, 'Excel-Export und Archive für Prüfer bereitstellen und diese informieren', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (36, 'Klausurkurs und Klausur unsichtbar machen und in Bereich Prüfungsumgebung verschieben', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (37, 'Kurssicherung erstellen', 1, 'qm')", null);

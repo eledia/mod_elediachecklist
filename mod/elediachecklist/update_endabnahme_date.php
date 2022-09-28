@@ -34,6 +34,16 @@ $examId = optional_param('examId', 0, PARAM_INT);
 $eadate = optional_param('eadate', "", PARAM_TEXT);
 $idItem = optional_param('idItem', 0, PARAM_INT);
 
-$DB->execute("UPDATE {elediachecklist_item_date} SET checkdate = STR_TO_DATE('" . $eadate . "', '%Y-%m-%d') where examid = " . $examId);
+
+$tp = 0;
+$arr = explode('-', $eadate);
+if(count($arr) == 3) {
+    $tp = mktime($hour=12, $minute=0, $sec=0, $month=(int)$arr[1], $day=(int)$arr[2], $year=(int)$arr[0]);
+}
+
+// ALT
+//$DB->execute("UPDATE {elediachecklist_item_date} SET checkdate = STR_TO_DATE('" . $eadate . "', '%Y-%m-%d') where examid = " . $examId);
+// NEU
+$DB->execute("UPDATE {elediachecklist_item_date} SET checkdate = " . $tp . " WHERE examid = " . $examId);
 
 echo "UPDATED";

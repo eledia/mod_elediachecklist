@@ -64,6 +64,31 @@ $checks = $DB->get_records_sql($sql, ['examid' => $examid, 'examid_' => $examid]
 // Aber solange ich es nicht besser weiss, aendere ich hier nichts.
 // ng, 2022-09-02
 
+
+// DATEN //.
+
+$sql = 'SELECT * FROM {elediachecklist_item} ORDER BY position ASC ';
+$result = $DB->get_records_sql($sql);
+$all = array();
+foreach($result as $item) {
+    $id = $item->id;
+    $all[$id] = $id;
+}
+
+$kvbselected = get_config('elediachecklist', 'erinnerung_kvb_name');
+$kvbselectedarray = explode(',', $kvbselected);
+if(count($kvbselectedarray) == 0) {
+    $kvbselectedarray = $all;
+}
+$knbselected = get_config('elediachecklist', 'erinnerung_knb_name');
+$knbselectedarray = explode(',', $knbselected);
+if(count($knbselectedarray) == 0) {
+    $knbselectedarray = $all;
+}
+
+
+// $checks erweitern //.
+
 $buf = array();
 foreach($checks as $check) {
 
@@ -101,16 +126,43 @@ $PAGE->set_context($context);
 
 
 
-$checksInMail = "";
-$examDate = "";
-$bezeichnung = "";
+$checksInMail = '';
+$examDate = '';
+$bezeichnung = '';
 foreach ($checks as $item) {
-    $checksInMail = $checksInMail . $item->displaytext . "<br/>";
+
+    $id = $item->id;
+
+    // Ggf. aussortieren //.
+    // Nur die Punkte versenden, die in den (Plugin-)Einstellungen aufgefuehrt sind.
+    if ($mailType == "kvb") {
+        if(!in_array($id, $kvbselectedarray)) {
+            continue;
+        }
+    }
+    else if ($mailType == "knb") {
+        if(!in_array($id, $knbselectedarray)) {
+            continue;
+        }
+    }
+
+    // DEVELOPER //.
+    //$checksInMail .= 'id = '.$id.' - ';
+    $checksInMail .= $item->displaytext . "<br/>";
+
     $examDate = $item->examdate;
     $bezeichnung = $item->examname;
 }
 
-//Klausurvorbereitung
+// DEVELOPER //.
+//$checksInMail .= '<br />';
+//$checksInMail .= 'mailType = '.$mailType.'<br />';
+//$checksInMail .= 'KVB: '.$kvbselected.'<br />';
+//$checksInMail .= '<pre>'.print_r($kvbselectedarray, true).'</pre>';
+//$checksInMail .= 'KNB: '.$knbselected.'<br />';
+//$checksInMail .= '<pre>'.print_r($knbselectedarray, true).'</pre>';
+
+// Klausurvorbereitung
 if ($mailType == "kvb") {
     $subject = get_string("KVB_mail_subject", "elediachecklist");
     $message = get_string("KVB_mail_text", "elediachecklist" );
@@ -119,9 +171,8 @@ if ($mailType == "kvb") {
     $message = str_replace("{BEZEICHNUNG}", $bezeichnung, $message);
     email_to_user(core_user::get_user_by_email($contactpersonmail), $CFG->noreplyaddress, $subject, $message, $message );
 }
-
-//Klausurnachbereitung
-if ($mailType == "knb") {
+// Klausurnachbereitung
+else if ($mailType == "knb") {
     $subject = get_string("KNB_mail_subject", "elediachecklist"  );
     $message = get_string("KNB_mail_text", "elediachecklist"  );;
     $message = str_replace("{ITEMS}", $checksInMail, $message);
@@ -130,15 +181,29 @@ if ($mailType == "knb") {
     email_to_user(core_user::get_user_by_email($contactpersonmail), $CFG->noreplyaddress, $subject, $message, $message );
 }
 
-unset($coreuser);
-if ($extraEmail != null && $extraEmail != "") {
-    $coreuser = core_user::get_user_by_email($extraEmail);
-    //echo 'gettype = '.gettype($coreuser).'<br />';
-    //echo '<pre>'.print_r($coreuser, true).'</pre>';
-}
+//unset($coreuser);
+//if ($extraEmail != null && $extraEmail != "") {
+//    $coreuser = core_user::get_user_by_email($extraEmail);
+//    //echo 'gettype = '.gettype($coreuser).'<br />';
+//    //echo '<pre>'.print_r($coreuser, true).'</pre>';
+//}
 
-if ($extraEmail != null && $extraEmail != ""  &&  isset($coreuser)  &&  $coreuser !== falsei_quer) {
-    email_to_user(core_user::get_user_by_email($extraEmail), $CFG->noreplyaddress, $subject, $message, $message );
+if ($extraEmail != null  &&  $extraEmail != ""  &&  filter_var($extraEmail, FILTER_VALIDATE_EMAIL) ) {
+//if ($extraEmail != null && $extraEmail != ""  &&  isset($coreuser)  &&  $coreuser !== false) {
+
+    $userextra = core_user::get_user_by_email($extraEmail);
+    if(!$userextra) {
+        $userextra = new stdClass();
+        $userextra->id = guest_user()->id;
+        $userextra->lang = current_language();
+        $userextra->firstaccess = time();
+        $userextra->mnethostid = $CFG->mnet_localhost_id;
+        $userextra->email = $extraEmail;
+        $userextra->username = 'Guest';
+        $userextra->mailformat = 1;
+    }
+
+    email_to_user($userextra, $CFG->noreplyaddress, $subject, $message, $message );
     echo "Mail SENT to " . $contactpersonmail . " and " . $extraEmail;
 } else {
     echo "Mail SENT to " . $contactpersonmail;

@@ -342,16 +342,18 @@ foreach ($examTopics as &$topic) {
     $second = $txt_of_id;
     //$second = iconv('UTF-8', 'windows-1252', $second);
 
-    if ($topic->displaytext == "Endabnahme") {
-        $eaDate = $DB->get_record("elediachecklist_item_date", ['examid' => $examid]);
-        //$third = iconv('UTF-8', 'windows-1252', date("d.m.Y", strtotime($eaDate->checkdate)));
-        $third = date("d.m.Y", $eaDate->checkdate);
-        //$third = date("d.m.Y", 1662364800);
-        //$pdf->Cell(40, 12, iconv('UTF-8', 'windows-1252', date("d.m.Y", strtotime($eaDate->checkdate))), 1, 0, 'C', false, '', 2);
-    } else {
-        $third = date('d.m.Y', strtotime($topic->duetime . ' day', strtotime($topicDate)));
-        //$third = iconv('UTF-8', 'windows-1252', $third);
-        //$pdf->Cell(40, 12, iconv('UTF-8', 'windows-1252', date('d.m.Y', strtotime($topic->duetime . ' day', strtotime($topicDate)))), 1, 0, 'C', false, '', 2);
+    $third = '-';
+    if($examid > 0) {
+        if ($topic->displaytext == "Endabnahme") {
+            $eaDate = $DB->get_record("elediachecklist_item_date", ['examid' => $examid]);
+            if (isset($eaDate->checkdate)) {
+                $third = date("d.m.Y", $eaDate->checkdate);
+            }
+        } else {
+            if (isset($topic->duetime)) {
+                $third = date('d.m.Y', strtotime($topic->duetime . ' day', strtotime($topicDate)));
+            }
+        }
     }
 
     $html .= '<tr>';

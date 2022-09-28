@@ -480,7 +480,11 @@ class checklist_class {
         //$sql .= "AND eledia.responsibleperson = _responsibleperson.id";
 
         $exams = $DB->get_records_sql($sql);
+        //echo '<pre>'.print_r($exams, true).'</pre>';
+
         $departmentchoices = unserialize(get_config('block_eledia_adminexamdates', 'departmentchoices'));
+        //echo '<pre>'.print_r($departmentchoices, true).'</pre>';
+
         $examDateNameOptions = "";
         foreach ($exams as &$exam) {
 
@@ -506,7 +510,8 @@ class checklist_class {
             }
             $exam->contactperson = '';
             if(isset($res[$contactperson_id])) {
-                $exam->contactperson = trim($res[$contactperson_id]->firstname.' '.$res[$contactperson_id]->lastname);
+                $exam->contactpersonemail = $res[$contactperson_id]->email;
+                $exam->contactperson      = trim($res[$contactperson_id]->firstname.' '.$res[$contactperson_id]->lastname);
             }
             $exam->responsibleperson = '';
             if(isset($res[$responsibleperson_id])) {
@@ -528,7 +533,10 @@ class checklist_class {
          //Load Exam Topics
         //TODO ADD EXAM ID IN SELECT CONDITION
         //$examTopics = $DB->get_records("elediachecklist_item", ['checklist' => $this->checklist->id]);
-        $examTopics = $DB->get_records("elediachecklist_item", ['checklist' => $this->checklist->id]);
+        //$examTopics = $DB->get_records("elediachecklist_item", ['checklist' => $this->checklist->id]);
+        $sql = "SELECT * FROM {elediachecklist_item} WHERE checklist = ".$this->checklist->id." ORDER BY position ASC";
+        $examTopics = $DB->get_records_sql($sql);
+        //echo '<pre>'.print_r($examTopics, true).'</pre>';
 
         $htmlTopics = "";
         foreach ($examTopics as &$topic) {
@@ -538,6 +546,13 @@ class checklist_class {
             $htmlTopics = $htmlTopics . "<tr><td style='padding-left: 30px;'><input class='form-check-input' type='checkbox' disabled>" . $topic->displaytext . "<br/><td style='text-align: center;'> - </td><td>-</td><td>-</td></tr>";
         }
         $this->tabTerminContent = str_replace("{EXAM_TOPICS}", $htmlTopics, $this->tabTerminContent);
+
+        // Ab hier ist die HTML-Tabelle schon 'fertig'
+        // - Die einzelnen tr-Zeilen werden irgendwo noch irgendwie sortiert ???
+        //echo '<div style="border:1px solid blue;">';
+        //echo $this->tabTerminContent;
+        //echo '</div>';
+        //die();
 
         //Save ChecklistId
         $this->globalLayout = str_replace("{elediachecklist_ID}", $this->checklist->id, $this->globalLayout);
@@ -1105,7 +1120,12 @@ class checklist_class {
             $this->process_view_actions();
         }
 
-        $itemList = $DB->get_records("elediachecklist_my_item", ['type' => "ea"]);
+        //---- ALT
+        //$itemList = $DB->get_records("elediachecklist_my_item", ['type' => "ea"]);
+        //----- NEU
+        $sql = "SELECT * FROM {elediachecklist_my_item} WHERE type = 'ea' ORDER BY id ASC";
+        $itemList = $DB->get_records_sql($sql);
+
         $checkedItems = $DB->get_records("elediachecklist_my_check", ['id_exam' => $this->myExamId]);
 
         $htmlItems = "";
@@ -1126,7 +1146,7 @@ class checklist_class {
                 if (is_siteadmin() and $PAGE->user_is_editing()) {
                     $htmlItems = $htmlItems . "<div class='form-check'><input class='form-check-input' type='checkbox' " . $isChecked . " value='" . $item->id . "' name='" . $checkboxTitle . "' id='itemCheckEA"
                         . $item->id . "' onclick='toggleCheck(\"ea\", " . $item->id . ", " . $this->myExamId . ")'><label class='form-check-label' for='formCheck-1' style='width: 95%'>" . $item->displaytext . "</label>" .
-                        "<div style='cursor: pointer; float: right' onclick='prepareEditEAItem(" . $item->id . ",\"" . $item->displaytext . "\")'>✍</div></div>";
+                        "<div style='cursor: pointer; float: right' onclick='prepareEditEAItem(" . $item->id . ",\"" . trim($item->displaytext) . "\")'>✍</div></div>";
                 } else {
                     $htmlItems = $htmlItems . "<div class='form-check'><input class='form-check-input' type='checkbox' " . $isChecked . " value='" . $item->id . "' name='" . $checkboxTitle . "' id='itemCheckEA" . $item->id . "' onclick='toggleCheck(\"ea\", " . $item->id . ", " . $this->myExamId . ")'><label class='form-check-label' for='formCheck-1'>" . $item->displaytext . "</label></div>";
                 }
@@ -1136,7 +1156,25 @@ class checklist_class {
         //$htmlItems = $htmlItems . "<br/><b>Comments</b><br/><textarea rows='5' name='commentsEA' id='commentsEA' style='width: 100%'></textarea> <br/><a href='#' onclick='localStorage.setItem(\"commentsEA" . $this->myExamId . "\", document.getElementById(\"commentsEA\").value); window.open(\"export_pdf.php?examid=" . $this->myExamId . "&type=ea\")'  class='btn btn-success' data-toggle='modal'><i class='material-icons'></i> <span>Export PDF</span></a>";
         //$htmlItems = $htmlItems . "<br/><b>Comments</b><br/><textarea rows='5' name='commentsEA' id='commentsEA' style='width: 100%'></textarea> <br/><a href='#' onclick='exportPDF_ea(" . $this->myExamId . ", document.getElementById(\"commentsEA\").value)' class='btn btn-success' data-toggle='modal'><i class='material-icons'></i> <span>Export PDF</span></a>";
         //$htmlItems = $htmlItems . "<br/><b>Comments</b><br/><textarea rows='5' name='commentsEA' id='commentsEA' style='width: 100%'></textarea> <br/><a href='#' onclick='$.post( \"savepdfcomments.php\", {commentsEA : document.getElementById(\"commentsEA\").value}, function( data ) { window.open(\"export_pdf.php?examid=" . $this->myExamId . "&type=ea\")})'  class='btn btn-success' data-toggle='modal'><i class='material-icons'></i> <span>Export PDF</span></a>";
-        $htmlItems = $htmlItems . "<br/><b>Comments</b><br/><textarea rows='5' name='commentsEA' id='commentsEA' style='width: 100%'></textarea> <br/><a href='#' onclick='$.post( \"export_pdf.php\", {commentsEA : document.getElementById(\"commentsEA\").value}, function( data ) { window.open(\"export_pdf.php?examid=" . $this->myExamId . "&type=ea\")})'  class='btn btn-success' data-toggle='modal'><i class='material-icons'></i> <span>Export PDF</span></a>";
+        //----- ALT
+        //$htmlItems = $htmlItems . "<br/><b>Comments</b><br/><textarea rows='5' name='commentsEA' id='commentsEA' style='width: 100%'></textarea> <br/><a href='#' onclick='$.post( \"export_pdf.php\", {commentsEA : document.getElementById(\"commentsEA\").value}, function( data ) { window.open(\"export_pdf.php?examid=" . $this->myExamId . "&type=ea\")})'  class='btn btn-success' data-toggle='modal'><i class='material-icons'></i> <span>Export PDF</span></a>";
+        //----- NEU
+
+        $htmlItems = $htmlItems . "<br/><b>Comments</b><br/>";
+
+        $onc  = '';
+        $onc .= 'var str1 = "export_pdf.php?examid='.$this->myExamId.'&type=ea";';
+        $onc .= 'var str2 = "&commentsEA=";';
+        $onc .= 'var str3 = encodeURI(document.getElementById("commentsEA").value);';
+        //$onc .= 'var str3 = "";';
+        $onc .= 'var href = str1.concat(str2, str3);';
+        //$onc .= 'alert(href);';
+        $onc .= "window.open(href);";
+
+        $htmlItems .= "<textarea rows='5' name='commentsEA' id='commentsEA' style='width: 100%'></textarea> <br/>";
+        $htmlItems .= "<a href='#' onclick='".$onc."' class='btn btn-success' data-toggle='modal'>";
+        $htmlItems .= "<i class='material-icons'></i> <span>Export PDF</span>";
+        $htmlItems .= "</a>";
 
         print $htmlItems;
 
@@ -1176,7 +1214,12 @@ class checklist_class {
             $this->process_view_actions();
         }
 
-        $itemList = $DB->get_records("elediachecklist_my_item", ['type' => "qm"]);
+        //----- ALT
+        //$itemList = $DB->get_records("elediachecklist_my_item", ['type' => "qm"]);
+        //----- NEU
+        $sql = "SELECT * FROM {elediachecklist_my_item} WHERE type = 'qm' ORDER BY id";
+        $itemList = $DB->get_records_sql($sql);
+
         $checkedItems = $DB->get_records("elediachecklist_my_check", ['id_exam' => $this->myExamId]);
 
         $htmlItems = "";
@@ -1198,7 +1241,7 @@ class checklist_class {
                     $htmlItems = $htmlItems . "<div class='form-check'><input class='form-check-input' type='checkbox' " . $isChecked . " value='" . $item->id . "' name='" . $checkboxTitle .
                         "' id='itemCheckQM" . $item->id . "' onclick='toggleCheck(\"qm\", " . $item->id . ", " . $this->myExamId . ")'><label class='form-check-label' for='formCheck-1' style='width: 95%'>" . $item->displaytext .
                         "</label>" .
-                        "<div style='cursor: pointer; float: right' onclick='prepareEditQMItem(" . $item->id . ",\"" . $item->displaytext . "\")'>✍</div></div>";
+                        "<div style='cursor: pointer; float: right' onclick='prepareEditQMItem(" . $item->id . ",\"" . trim($item->displaytext) . "\")'>✍</div></div>";
                 } else {
                     $htmlItems = $htmlItems . "<div class='form-check'><input class='form-check-input' type='checkbox' " . $isChecked . " value='" . $item->id . "' name='" . $checkboxTitle .
                         "' id='itemCheckQM" . $item->id . "' onclick='toggleCheck(\"qm\", " . $item->id . ", " . $this->myExamId . ")'><label class='form-check-label' for='formCheck-1'>" . $item->displaytext .
@@ -1325,6 +1368,7 @@ class checklist_class {
             $this->process_view_actions();
         }
 
+        //echo '<div style="border: 1px solid red;">'.$this->tabTerminContent.'</div>'; //die();
         print $this->tabTerminContent;
 
         print "</div>";
@@ -3982,4 +4026,69 @@ class checklist_class {
         }
         return $allgroupings[$courseid];
     }
+}
+
+/**
+ * <pre>
+ * Nur ausgewaehlte Eintraege werden im PDF angezeigt.
+ * 9 von 17 (eigentlich vorhandenen)
+ * </pre>
+ * @param int $elediachecklist_item_id
+ * @return string
+ */
+function txt_of_id($elediachecklist_item_id) {
+
+    switch($elediachecklist_item_id) {
+
+        // 01 = (C ->  3) Beschreibung der Prüfungskonfiguration
+        case 3:
+            $txt = get_string('text_pdf_01', 'elediachecklist');
+            break;
+
+        // 02 = (E ->  5) Fertigstellung und Funktionstest der Klausur
+        case 5:
+            $txt = get_string('text_pdf_02', 'elediachecklist');
+            break;
+
+        // 03 = (F ->  6) Bereitstellung der Klausur für Anpassungen und Qualitätskontrolle
+        case 6:
+            $txt = get_string('text_pdf_03', 'elediachecklist');
+            break;
+
+        // 04 = (G ->  7) Endabnahme E-Klausur
+        case 7:
+            $txt = get_string('text_pdf_04', 'elediachecklist');
+            break;
+
+        // 05 = (H ->  8) HIS-Liste an E-Klausurteam senden
+        case 8:
+            $txt = get_string('text_pdf_05', 'elediachecklist');
+            break;
+
+        // 06 = (I ->  9) Gruppeneinteilung mit Namen und Matrikelnummer
+        case 9:
+            $txt = get_string('text_pdf_06', 'elediachecklist');
+            break;
+
+        // 07 = (J -> 10) Namen und Anzahl der Aufsichtspersonen, Studierendeninformationen
+        case 10:
+            $txt = get_string('text_pdf_07', 'elediachecklist');
+            break;
+
+        // 08 = (M -> 15) Mitteilung an E-Klausurteam: Klausureinsicht und Korrekturen abgeschlossen
+        case 15:
+            $txt = get_string('text_pdf_08', 'elediachecklist');
+            break;
+
+        // 09 = (O -> 17) Notenschlüssel bereitgestellt
+        case 17:
+            $txt = get_string('text_pdf_09', 'elediachecklist');
+            break;
+
+        default:
+            $txt = '';
+            break;
+    }
+
+    return $txt;
 }
