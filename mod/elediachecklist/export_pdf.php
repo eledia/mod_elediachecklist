@@ -238,9 +238,8 @@ if (isset($_REQUEST['commentsEA']) ) {
             2 => 0, // tp
     );
     foreach($exams as $exam) {
-        $sql = "SELECT id, firstname, lastname FROM {user} WHERE id = ".$exam->examiner;
+        $sql = "SELECT id, firstname, lastname FROM {user} WHERE id IN (".$exam->examiner.")";
         $res = $DB->get_records_sql($sql);
-        //echo '<pre>'.print_r($res, true).'</pre>';
         if(count($res) > 0) {
             $dozent = array_shift($res);
             $myrow = array(
@@ -252,6 +251,16 @@ if (isset($_REQUEST['commentsEA']) ) {
         }
     }
     //echo '<pre>'.print_r($myrow, true).'</pre>';
+
+    $arrdozent = array();
+    $sql = "SELECT id, firstname, lastname FROM {user} WHERE id IN (".$exam->examiner.")";
+    $res = $DB->get_records_sql($sql);
+    foreach($res as $one) {
+        $name = trim($one->firstname.' '.$one->lastname);
+        $arrdozent[] = $name;
+    }
+    sort($arrdozent, SORT_NATURAL);
+    //echo '<pre>'.print_r($arrdozent, true).'</pre>';
 
     //Klausur date
     $examdate = $myrow[2];
@@ -297,8 +306,11 @@ if (isset($_REQUEST['commentsEA']) ) {
     }
     $pdf->Cell(0, 10, $inp, 0, 0, 'L');
 
-    $pdf->SetX(200);
-    $pdf->Cell(0, 10, iconv('UTF-8', 'windows-1252', 'Dozent') . ': ' . iconv('UTF-8', 'windows-1252', $myrow[0] . " " . $myrow[1]), 0, 0, 'L');
+    //$inp = $myrow[0] . " " . $myrow[1];
+    $inp = implode(', ', $arrdozent);
+    //$pdf->SetX(200);
+    $pdf->SetX(180);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'windows-1252', 'Dozent') . ': ' . iconv('UTF-8', 'windows-1252', $inp), 0, 0, 'L');
 
     // Line break
     //$pdf->Ln(20);

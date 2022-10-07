@@ -33,7 +33,7 @@ $checklistId = optional_param('checklistId', 0, PARAM_INT);
 $qmId = optional_param('EAId', -1, PARAM_INT);
 
 if ($qmId == -1) {
-    $DB->execute("INSERT INTO {elediachecklist_my_item} (`is_checkbox`, `displaytext`, `type`) VALUES ('1', '" . $qmName . "', 'ea')");
+    $DB->execute("INSERT INTO {elediachecklist_my_item} (is_checkbox, displaytext, type) VALUES ('1', '" . $qmName . "', 'ea')");
 } else {
     $DB->execute("UPDATE {elediachecklist_my_item} SET displaytext = ? WHERE id = ?",[$qmName, $qmId]);
 }

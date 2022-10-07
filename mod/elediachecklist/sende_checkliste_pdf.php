@@ -133,12 +133,13 @@ $examTopics = $DB->get_records_sql($sql);
 
 // Startwerte
 $properties = array(
-        'examiner'       => '', // Dozent
-        'examname'       => '', // Bezeichnung Klausur
-        'examtimestart'  => '', // Klausurtermin (d.m.Y)
-        'numberstudents' => '', // Erwartete Anzahl Prueflinge
-        'scl_name'       => '', // Name SCL Betreuer
-        'duration'       => '', // Zeitraum der Raumbuchung
+        'examiner'       => '',      // Dozent
+        'examiners'      => array(), // Dozenten
+        'examname'       => '',      // Bezeichnung Klausur
+        'examtimestart'  => '',      // Klausurtermin (d.m.Y)
+        'numberstudents' => '',      // Erwartete Anzahl Prueflinge
+        'scl_name'       => '',      // Name SCL Betreuer
+        'duration'       => '',      // Zeitraum der Raumbuchung
 );
 
 $checkedTopics = $DB->get_records("elediachecklist_check", ['teacherid' => $examid]);
@@ -154,30 +155,54 @@ foreach($result as $one) {
 
     $examStart = $one->examtimestart;
 
-    $sql = "SELECT id, firstname, lastname FROM {user} WHERE id = ".$one->examiner;
-    $res = $DB->get_records_sql($sql);
+    $examiners = array();
     $examiner = '';
-    if(isset($res)  &&  is_array($res)  &&  count($res) > 0) {
-        $val = array_shift($res);
-        $examiner = trim($val->firstname.' '.$val->lastname);
+    // Dozenten
+    if(!is_numeric($one->examiner)) {
+        $sql = "SELECT id, firstname, lastname FROM {user} WHERE id IN (".$one->examiner.")";
+        $res = $DB->get_records_sql($sql);
+        foreach($res as $r) {
+            $examiners[] = trim($r->firstname . ' ' . $r->lastname);
+        }
+        if(count($examiners) > 0) {
+            $examiner = $examiners[0];
+        }
+    }
+    // Dozent
+    else {
+        $sql = "SELECT id, firstname, lastname FROM {user} WHERE id = " . $one->examiner;
+        $res = $DB->get_records_sql($sql);
+        if (isset($res) && is_array($res) && count($res) > 0) {
+            $val = array_shift($res);
+            $examiner = trim($val->firstname . ' ' . $val->lastname);
+            $examiners = array(trim($val->firstname . ' ' . $val->lastname));
+        }
     }
 
+    // SCL-Verantwortlicher
+    $sclname = '';
     $sql = "SELECT id, firstname, lastname FROM {user} WHERE id = ".$one->responsibleperson;
     $res = $DB->get_records_sql($sql);
-    $sclname = '';
     if(isset($res)  &&  is_array($res)  &&  count($res) > 0) {
         $val = array_shift($res);
         $sclname = trim($val->firstname.' '.$val->lastname);
     }
 
-    $properties['examiner'] = $examiner;
-    $properties['examname'] = $one->examname;
-    $properties['examtimestart'] = date('d.m.Y', $one->examtimestart);
+    $properties['examiner']       = $examiner;
+    $properties['examiners']      = $examiners;
+    $properties['examname']       = $one->examname;
+    $properties['examtimestart']  = date('d.m.Y', $one->examtimestart);
     $properties['numberstudents'] = $one->numberstudents;
-    $properties['scl_name'] = $sclname;
-    $properties['duration'] = date('H:i', $one->examtimestart).' - '.date('H:i', ($one->examtimestart + ($one->examduration*60)));
+    $properties['scl_name']       = $sclname;
+    $properties['duration']       = date('H:i', $one->examtimestart).' - '.date('H:i', ($one->examtimestart + ($one->examduration*60)));
 }
 
+// Wenn kein SCL-Verantwortlicher vorhanden ist, keine E-Mail raus!
+if(!isset($properties['scl_name'])  ||  trim($properties['scl_name']) == '') {
+    $str = get_string('kein_scl_verantwortlicher_genannt', "elediachecklist");
+    echo $str;
+    exit();
+}
 
 // PDF //.
 
@@ -230,7 +255,7 @@ $pdfName = 'Termincheckliste_' . date("Ymd") . '.pdf';
 $pdf->Output($CFG->dataroot . "/" . $pdfName, 'F');
 */
 //----- NEU
-$pdf = new PDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+$pdf = new PDF('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
 // set margins
 $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
@@ -259,7 +284,7 @@ $html  = '';
 $html.= '<table border="1" cellpadding="0" cellspacing="0"><tr><td>';
 $html .= '<table border="0" cellpadding="4" cellspacing="0" width="100%">';
 $html .= '<tr>';
-$html .= '<td align="left" width="100%">'.get_string('dozent', 'elediachecklist').': '.$properties['examiner'].'</td>';
+$html .= '<td align="left" width="100%">'.get_string('dozent', 'elediachecklist').': '.implode(', ', $properties['examiners']).'</td>';
 $html .= '</tr>';
 $html .= '<tr>';
 $html .= '<td align="left" width="100%">'.get_string('bezeichnung_klausur', 'elediachecklist').': '.$properties['examname'].'</td>';
@@ -273,18 +298,18 @@ $pdf->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=true, $align=
 $html  = '';
 $html .= '<table border="0" cellpadding="2" cellspacing="0" width="100%">';
 $html .= '<tr>';
-$html .= '<td align="left" width="20%">'.get_string('klausurtermin', 'elediachecklist').':</td>';
+$html .= '<td align="left" width="25%">'.get_string('klausurtermin', 'elediachecklist').':</td>';
 $html .= '<td align="left" width="30%">'.$properties['examtimestart'].'</td>';
-$html .= '<td align="left" width="20%">'.get_string('erwartetet_anzahl_prueflinge', 'elediachecklist').':</td>';
-$html .= '<td align="left" width="20%">'.$properties['numberstudents'].'</td>';
-$html .= '<td align="left" width="10%">&nbsp;</td>';
+$html .= '<td align="left" width="30%">'.get_string('erwartetet_anzahl_prueflinge', 'elediachecklist').':</td>';
+$html .= '<td align="left" width="15%">'.$properties['numberstudents'].'</td>';
+//$html .= '<td align="left" width="10%">&nbsp;</td>';
 $html .= '</tr>';
 $html .= '<tr>';
-$html .= '<td align="left" width="20%">'.get_string('name_scl_betreuer', 'elediachecklist').':</td>';
+$html .= '<td align="left" width="25%">'.get_string('name_scl_betreuer', 'elediachecklist').':</td>';
 $html .= '<td align="left" width="30%">'.$properties['scl_name'].'</td>';
-$html .= '<td align="left" width="20%">'.get_string('zeitraum_der_raumbuchung', 'elediachecklist').':</td>';
-$html .= '<td align="left" width="20%">'.$properties['duration'].'</td>';
-$html .= '<td align="left" width="10%">&nbsp;</td>';
+$html .= '<td align="left" width="30%">'.get_string('zeitraum_der_raumbuchung', 'elediachecklist').':</td>';
+$html .= '<td align="left" width="15%">'.$properties['duration'].'</td>';
+//$html .= '<td align="left" width="10%">&nbsp;</td>';
 $html .= '</tr>';
 $html .= '</table>';
 $html .= '<br /><br /><br />';
@@ -300,8 +325,8 @@ $html  = '';
 $html .= '<table border="1" cellpadding="6" cellspacing="0" width="100%">';
 $html .= '<tr>';
 $html .= '<td align="center" width="5%">&nbsp;</td>';
-$html .= '<td align="left" width="83%">Bezeichnung</td>';
-$html .= '<td align="center" width="12%">Datum</td>';
+$html .= '<td align="left" width="81%">Bezeichnung</td>';
+$html .= '<td align="center" width="14%">Datum</td>';
 $html .= '</tr>';
 foreach ($examTopics as &$topic) {
 
@@ -340,8 +365,8 @@ foreach ($examTopics as &$topic) {
 
     $html .= '<tr>';
     $html .= '<td align="center" width="5%">'.$isChecked.'</td>';
-    $html .= '<td align="left" width="83%">'.$second.'</td>';
-    $html .= '<td align="center" width="12%">'.$third.'</td>';
+    $html .= '<td align="left" width="81%">'.$second.'</td>';
+    $html .= '<td align="center" width="14%">'.$third.'</td>';
     $html .= '</tr>';
 }
 $html .= '</table>';

@@ -159,9 +159,18 @@ function loadLeftPanelData(examId) {
     //Load left panel data
     for (let i in exams) {
         if (exams[i].id == examId) {
+
+            var val_examiner = exams[i].examiner;
+            if(exams[i].examinercount > 0) {
+                val_examiner = exams[i].examinernames.join(', ');
+            }
+            //console.log('HIER');
+            //alert(val_examiner);
+
             $("#exam_name").val(exams[i].examname);
             $("#exam_id").val(exams[i].id);
-            $("#dozent").val(exams[i].examiner);
+            //$("#dozent").val(exams[i].examiner);
+            $("#dozent").val(val_examiner);
             $("#fachbereich").val(exams[i].departmentname);
             $("#ansprechpartner_fachgebiet").val(exams[i].contactperson);
             $("#scl_verantwortlicher").val(exams[i].responsibleperson);
@@ -174,16 +183,27 @@ function loadLeftPanelData(examId) {
     }
 }
 
-
+/**
+ * Tab: Termincheckliste
+ */
 function changeExamDateDropdown(examId, courseid) {
     var exams = JSON.parse($("#examList").html());
 
     //Load left panel data
     for (let i in exams) {
         if (exams[i].id == examId ) {
+
+            var val_examiner = exams[i].examiner;
+            if(exams[i].examinercount > 0) {
+                val_examiner = exams[i].examinernames.join(', ');
+            }
+            //console.log('HIER');
+            //alert(val_examiner);
+
             $("#exam_name").val(exams[i].examname);
             $("#exam_id").val(exams[i].id);
-            $("#dozent").val(exams[i].examiner);
+            //$("#dozent").val(exams[i].examiner);
+            $("#dozent").val(val_examiner);
             $("#fachbereich").val(exams[i].departmentname);
             $("#ansprechpartner_fachgebiet").val(exams[i].contactperson);
             $("#scl_verantwortlicher").val(exams[i].responsibleperson);

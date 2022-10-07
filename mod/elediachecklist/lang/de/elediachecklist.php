@@ -152,3 +152,5 @@ $string['erinnerung_klausurnachbereitung'] = 'E-Mail, Erinnerung Klausurnachbere
 $string['erinnerung_klausurnachbereitung_beschreibung'] = 'Wählen Sie die Punkte aus der Termincheckliste aus, '
 .'die in der E-Mail aufgeführt werden sollen.';
 
+$string['kein_scl_verantwortlicher_genannt'] = 'Es ist kein SCL-Verantwortlicher genannt. Es wurde keine E-Mail versendet.';
+

@@ -34,8 +34,34 @@ $topicDate = optional_param('date', 0, PARAM_INT);
 $checklistId = optional_param('checklistId', 0, PARAM_INT);
 $topicId = optional_param('topicId', -1, PARAM_INT);
 
+
 if ($topicId == -1) {
-    $DB->execute("INSERT INTO {elediachecklist_item} (`checklist`, `displaytext`, `duetime`, `emailtext`) VALUES (" . $checklistId . ", '" . $topicName . "', '" . $topicDate . "', '" . $topictextmail . "')");
+
+    $sql = "SELECT * FROM {elediachecklist_item}";
+    $res = $DB->get_records_sql($sql);
+    $newid = 0;
+    $newposition = 0;
+    foreach($res as $one) {
+        $id = $one->id;
+        $position = $one->position;
+        if($id > $newid) {
+            $newid = $id;
+        }
+        if($position > $newposition) {
+            $newposition = $position;
+        }
+    }
+    $newid++;
+    $newposition++;
+    //echo 'newid = '.$newid.'<br />';
+    //echo 'newposition = '.$newposition.'<br />';
+    // die();
+
+    $sql  = "INSERT INTO {elediachecklist_item} ";
+    $sql .= "(id, checklist, displaytext, position, duetime, emailtext) ";
+    $sql .= "VALUES ";
+    $sql .= "(" . $newid . ", " . $checklistId . ", '" . $topicName . "', ".$newposition.", '" . $topicDate . "', '" . $topictextmail . "')";
+    $DB->execute($sql);
 } else {
     $DB->execute("UPDATE {elediachecklist_item} SET displaytext = ?, duetime = ?, emailtext = ? WHERE id = ?",[$topicName, $topicDate, $topictextmail, $topicId]);
 }

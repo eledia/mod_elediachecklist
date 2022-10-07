@@ -37,23 +37,26 @@ $mailType = optional_param('mailType', "", PARAM_TEXT);
 $contactpersonmail = optional_param('contactPersonMail', "", PARAM_EMAIL);
 $extraEmail = optional_param('extraEmail', "", PARAM_EMAIL);
 
-//----- ALT
-//$checks = $DB->get_records_sql("SELECT distinct REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, myitem.duetime,
-//DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate,
-//exam.examname FROM {elediachecklist_item} myitem
-//INNER JOIN {eledia_adminexamdates} exam ON exam.id = ?
-//WHERE myitem.id NOT IN (SELECT mycheck.item FROM {elediachecklist_check} mycheck  where mycheck.teacherid=?)
-//ORDER BY myitem.duetime", ['examid' => $examid, 'examid_' => $examid]);
-//----- NEU
+
+// Wenn kein SCL-Verantwortlicher vorhanden ist, keine E-Mail raus!
+// SCL-Verantwortlicher = responsibleperson
+$eledia_adminexamdate = $DB->get_record('eledia_adminexamdates', array('id' => $examid));
+if(!$eledia_adminexamdate  ||  !isset($eledia_adminexamdate->responsibleperson)  ||  trim($eledia_adminexamdate->responsibleperson) == '') {
+    $str = get_string('kein_scl_verantwortlicher_genannt', 'elediachecklist');
+    echo $str;
+    exit();
+}
+//echo '<pre>'.print_r($eledia_adminexamdate, true).'</pre>';
+//die();
+
+
 $sql  = "SELECT ";
 $sql .= "myitem.id, ";
-//$sql .= "DISTINCT REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, ";
 $sql .= "myitem.emailtext, ";
 $sql .= "myitem.duetime, ";
-//$sql .= "DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, ";
 $sql .= "exam.examtimestart, ";
-//$sql .= "DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate, ";
-$sql .= "exam.examname ";
+$sql .= "exam.examname, ";
+$sql .= "exam.examiner, exam.contactperson, exam.responsibleperson ";
 $sql .= "FROM {elediachecklist_item} AS myitem ";
 $sql .= "INNER JOIN {eledia_adminexamdates} exam ON exam.id = ? ";
 $sql .= "WHERE myitem.id NOT IN (SELECT mycheck.item FROM {elediachecklist_check} AS mycheck WHERE mycheck.teacherid=?) ";

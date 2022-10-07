@@ -485,11 +485,18 @@ class checklist_class {
         $departmentchoices = unserialize(get_config('block_eledia_adminexamdates', 'departmentchoices'));
         //echo '<pre>'.print_r($departmentchoices, true).'</pre>';
 
-        $examDateNameOptions = "";
+        $examDateNameOptions = '';
+
+        // $exams erweitern
         foreach ($exams as &$exam) {
 
+            //echo '<pre>'.print_r($exam, true).'</pre>';
+
+            // Dozent(en)
             $examiner_id = $exam->examiner;
+            // Ansprechpartner
             $contactperson_id = $exam->contactperson;
+            // SCL-Verantwortlicher
             $responsibleperson_id = $exam->responsibleperson;
             //echo 'examiner_id = '.$examiner_id.'<br />';
             //echo 'contactperson_id = '.$contactperson_id.'<br />';
@@ -501,27 +508,61 @@ class checklist_class {
 
             $sql = "SELECT * FROM {user} WHERE id IN (".$examiner_id.", ".$contactperson_id.", ".$responsibleperson_id.")";
             $res = $DB->get_records_sql($sql);
+            //echo $sql.'<br /><br />'; //die();
             //echo '<pre>'.print_r($res, true).'</pre>';
-            $exam->examineremail = '';
-            $exam->examiner      = '';
-            if(isset($res[$examiner_id])) {
-                $exam->examineremail = $res[$examiner_id]->email;
-                $exam->examiner      = trim($res[$examiner_id]->firstname.' '.$res[$examiner_id]->lastname);
+
+            // Dozent(en) // mehrere moeglich // 2022-10-06
+            //            // $examiner_id = '3,12' - z.B.
+            //            // $examiner_id = '3'    - z.B.
+            $exam->examineremail  = '';
+            //$exam->examiner       = ''; // Eigenschaft des Objektes, nicht ueberschreiben!
+            $exam->examinername   = '';
+            $exam->examinercount  = 0;
+            $exam->examineremails = array();
+            $exam->examinernames  = array();
+            if(strpos($examiner_id, ',') !== false) {
+                $arr = explode(',', $examiner_id);
+                $id = trim($arr[0]);
+                if(isset($res[$id])) {
+                    $exam->examineremail = $res[$id]->email;
+                    $exam->examiner      = trim($res[$id]->firstname . ' ' . $res[$id]->lastname); // DEPRECATED
+                    $exam->examinername  = trim($res[$id]->firstname . ' ' . $res[$id]->lastname);
+                }
+                $exam->examinercount = count($arr);
+                foreach($arr as $one) {
+                    $id = trim($one);
+                    if(isset($res[$id])) {
+                        $exam->examineremails[] = $res[$id]->email;
+                        $exam->examinernames[]  = trim($res[$id]->firstname . ' ' . $res[$id]->lastname);
+                    }
+                }
             }
+            else {
+                $exam->examineremail  = $res[$examiner_id]->email;
+                $exam->examiner       = trim($res[$examiner_id]->firstname . ' ' . $res[$examiner_id]->lastname); // DEPRECATED
+                $exam->examinername   = trim($res[$examiner_id]->firstname . ' ' . $res[$examiner_id]->lastname);
+                $exam->examinercount  = 1;
+                $exam->examineremails = array($exam->examineremail);
+                $exam->examinernames  = array($exam->examiner);
+            }
+
+            // Ansprechpartner // nur 1 moeglich // 2022-10-06
             $exam->contactperson = '';
             if(isset($res[$contactperson_id])) {
                 $exam->contactpersonemail = $res[$contactperson_id]->email;
                 $exam->contactperson      = trim($res[$contactperson_id]->firstname.' '.$res[$contactperson_id]->lastname);
             }
+
+            // SCL-Verantwortlicher // nur 1 moeglich // 2022-10-06
             $exam->responsibleperson = '';
             if(isset($res[$responsibleperson_id])) {
                 $exam->responsibleperson = trim($res[$responsibleperson_id]->firstname.' '.$res[$responsibleperson_id]->lastname);
             }
 
-            //echo '<pre>'.print_r($exam, true).'</pre>';
-
             $exam->departmentname = (isset($departmentchoices[$exam->department])) ? $departmentchoices[$exam->department] : $exam->department;
             $examDateNameOptions = $examDateNameOptions . "<option value='" . $exam->id . "'>" . $exam->examname . "</option>";
+
+            //echo '<pre>'.print_r($exam, true).'</pre>';
         }
 
         //-----------------------------------------------------------------------------------
