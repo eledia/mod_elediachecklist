@@ -139,6 +139,7 @@ class checklist_class {
 						<input type='text' id='datumraw' style='display: none'/>
 					</div>
 					<hr>
+					    <!-- {BUTTONS_START} 
 						<div class='col-12' style='margin-top:10px'>
 							<input type='button' value='Sende Checkliste' style='width: 100%' onclick=\"document.getElementById('emailTypeValue').value='checkliste'; showExtraEmailModal();\"/>
 						</div>
@@ -148,6 +149,7 @@ class checklist_class {
 						<div class='col-12' style='margin-top:10px'>
 							<input type='button' value='Erinnerung Klausurnachbereitung' id='btnKNB' onclick=\"document.getElementById('emailTypeValue').value='knb'; showExtraEmailModal();\"/>
 						</div>
+					    {BUTTONS_END} -->
 					</div>
 				</div>
 				<div class='col'>
@@ -397,10 +399,6 @@ class checklist_class {
         }
 
         //Create dates for Endabnahme items, for each exam
-
-        // ALT //.
-        //$DB->execute("INSERT INTO mdl_elediachecklist_item_date (examid, checkid, checkdate) SELECT id, 7, DATE_ADD(FROM#UNIXTIME(ed.examtimestart), INTERVAL -5 day) FROM mdl_eledia_adminexamdates ed WHERE ed.id NOT IN (SELECT examid FROM mdl_elediachecklist_item_date)");
-        // NEU //.
         $sql  = "SELECT ed.id, ed.examtimestart ";
         $sql .= "FROM {eledia_adminexamdates} AS ed ";
         $sql .=     "WHERE ed.id NOT IN (SELECT eid.examid FROM {elediachecklist_item_date} AS eid)";
@@ -419,65 +417,17 @@ class checklist_class {
             $DB->execute($sql);
         }
 
+        //-----------------------------------------------------------------------------------
 
         //Load exam date names and populate them in the dropdown
         //$exams = $DB->get_records("eledia_adminexamdates");
 
-
-/*
-        $sql = "SELECT eledia.id, examrooms, semester, examtimestart, examduration, eledia.department, examname, numberstudents,
-            CONCAT(_examiner.firstname, ' ', _examiner.lastname) AS examiner,
-            _examiner.email as examineremail,
-            CONCAT(_contactperson.firstname, ' ', _contactperson.lastname) AS contactperson,
-            CONCAT(_responsibleperson.firstname, ' ', _responsibleperson.lastname) AS responsibleperson,
-            annotationtext, category, eledia.userid, eledia.timecreated, eledia.courseid, eledia.confirmed
-            FROM mdl_eledia_adminexamdates eledia, mdl_user _examiner, mdl_user _contactperson, mdl_user _responsibleperson
-            WHERE eledia.examiner = _examiner.id
-            AND eledia.contactperson = _contactperson.id
-            AND eledia.responsibleperson = _responsibleperson.id";
-*/
-/*
         $sql  = "SELECT ";
         $sql .= "eledia.id, eledia.department, eledia.userid, eledia.timecreated, eledia.courseid, eledia.confirmed, ";
         $sql .= "eledia.examrooms, eledia.semester, eledia.examtimestart, eledia.examduration, eledia.examname, ";
         $sql .= "eledia.numberstudents, eledia.annotationtext, eledia.category, ";
-        $sql .= "_examiner.email as examineremail, ";
-        $sql .= "CONCAT(_examiner.firstname, ' ', _examiner.lastname) AS examiner, ";
-        $sql .= "CONCAT(_contactperson.firstname, ' ', _contactperson.lastname) AS contactperson, ";
-        $sql .= "CONCAT(_responsibleperson.firstname, ' ', _responsibleperson.lastname) AS responsibleperson ";
-        $sql .= "FROM mdl_eledia_adminexamdates eledia, mdl_user _examiner, mdl_user _contactperson, mdl_user _responsibleperson ";
-        $sql .= "WHERE eledia.examiner = _examiner.id ";
-        $sql .= "AND eledia.contactperson = _contactperson.id ";
-        $sql .= "AND eledia.responsibleperson = _responsibleperson.id";
-        // NEU 1
-        //$sql .= "FROM mdl_eledia_adminexamdates AS eledia ";
-        //$sql .= "JOIN mdl_user AS _examiner ON (eledia.examiner = _examiner.id) ";
-        //$sql .= "JOIN mdl_user AS _contactperson ON (eledia.contactperson = _contactperson.id) ";
-        //$sql .= "JOIN mdl_user AS _responsibleperson ON (eledia.responsibleperson = _responsibleperson.id) ";
-
-        $exams = $DB->get_records_sql($sql);
-        $departmentchoices = unserialize(get_config('block_eledia_adminexamdates', 'departmentchoices'));
-        $examDateNameOptions = "";
-        foreach ($exams as &$exam) {
-            $exam->departmentname = (isset($departmentchoices[$exam->department])) ? $departmentchoices[$exam->department] : $exam->department;
-            $examDateNameOptions = $examDateNameOptions . "<option value='" . $exam->id . "'>" . $exam->examname . "</option>";
-        }
-*/
-        //-----------------------------------------------------------------------------------
-
-        $sql  = "SELECT ";
-        $sql .= "eledia.id, eledia.department, eledia.userid, eledia.timecreated, eledia.courseid, eledia.confirmed, ";
-        $sql .= "eledia.examrooms, eledia.semester, eledia.examtimestart, eledia.examduration, eledia.examname, ";
-        $sql .= "eledia.numberstudents, eledia.annotationtext, eledia.category, ";
-        $sql .= "eledia.examiner, eledia.contactperson, eledia.responsibleperson ";
-        //$sql .= "_examiner.email as examineremail, ";
-        //$sql .= "CONCAT(_examiner.firstname, ' ', _examiner.lastname) AS examiner, ";
-        //$sql .= "CONCAT(_contactperson.firstname, ' ', _contactperson.lastname) AS contactperson, ";
-        //$sql .= "CONCAT(_responsibleperson.firstname, ' ', _responsibleperson.lastname) AS responsibleperson ";
-        $sql .= "FROM {eledia_adminexamdates} AS eledia ";//, mdl_user _examiner, mdl_user _contactperson, mdl_user _responsibleperson ";
-        //$sql .= "WHERE eledia.examiner = _examiner.id ";
-        //$sql .= "AND eledia.contactperson = _contactperson.id ";
-        //$sql .= "AND eledia.responsibleperson = _responsibleperson.id";
+        $sql .= "eledia.examiner, eledia.contactperson, eledia.responsibleperson, eledia.confirmed ";
+        $sql .= "FROM {eledia_adminexamdates} AS eledia ";
 
         $exams = $DB->get_records_sql($sql);
         //echo '<pre>'.print_r($exams, true).'</pre>';
@@ -506,7 +456,16 @@ class checklist_class {
                 continue;
             }
 
-            $sql = "SELECT * FROM {user} WHERE id IN (".$examiner_id.", ".$contactperson_id.", ".$responsibleperson_id.")";
+            $in = $examiner_id; // 5 // 5,12 // mehrere Dozenten sind moeglich
+            if(trim($contactperson_id) != '') {
+                $in .= ', '.$contactperson_id;
+            }
+            if(trim($responsibleperson_id) != '') {
+                $in .= ', '.$responsibleperson_id;
+            }
+
+            //$sql = "SELECT * FROM {user} WHERE id IN (".$examiner_id.", ".$contactperson_id.", ".$responsibleperson_id.")";
+            $sql = "SELECT * FROM {user} WHERE id IN (".$in.")";
             $res = $DB->get_records_sql($sql);
             //echo $sql.'<br /><br />'; //die();
             //echo '<pre>'.print_r($res, true).'</pre>';
@@ -566,7 +525,6 @@ class checklist_class {
         }
 
         //-----------------------------------------------------------------------------------
-
 
         $this->globalLayout = str_replace("{EXAMDATENAME_OPTIONS}", $examDateNameOptions, $this->globalLayout);
         $this->globalLayout = str_replace("{EXAM_LIST}", json_encode($exams), $this->globalLayout);
@@ -1379,6 +1337,7 @@ class checklist_class {
     }
 
     public function tabtermin() {
+
         global $OUTPUT, $CFG, $PAGE, $DB;
 
         $examid = optional_param('examid', 0, PARAM_INT);
@@ -1393,6 +1352,30 @@ class checklist_class {
         $this->view_header();
 
         $this->printNavigationTopButtons();
+
+
+        // Button: 'Sende Checkliste'
+        // Button: 'Erinnerung Klausurvorbereitung'
+        // Button: 'Erinnerung Klausurnachbereitung'
+        //-----
+        // Buttons nur anzeigen, wenn drei Bedingungen erfuellt sind:
+        // 1. Wird nur angeigt beim Tab Termincheckliste (= $this->tabtermin() = hier erfuellt)
+        // 2. Der Termin muss bestaetigt sein.
+        // 3. Ein SCL-Verantwortlicher muss fuer den Pruefungstermin vorliegen.
+        $adminexamdate = $DB->get_record('eledia_adminexamdates', array('id' => $examid));
+        //echo '<pre>'.print_r($adminexamdate, true).'</pre>';
+        $showbuttons = false;
+        if(
+               isset($adminexamdate->confirmed)  &&  $adminexamdate->confirmed == 1
+           &&  isset($adminexamdate->responsibleperson)  &&  trim($adminexamdate->responsibleperson) != ''
+          ) {
+            $showbuttons = true;
+        }
+        if($showbuttons === true) {
+            $this->globalLayout = str_replace('<!-- {BUTTONS_START}', '', $this->globalLayout);
+            $this->globalLayout = str_replace('{BUTTONS_END} -->', '', $this->globalLayout);
+        }
+
 
         print $this->globalLayout;
 
