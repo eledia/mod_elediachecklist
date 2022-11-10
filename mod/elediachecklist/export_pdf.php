@@ -24,8 +24,11 @@ class export_pdf extends FPDF {
         } else {
             $this->Cell(80, 10, iconv('UTF-8', 'windows-1252', 'Endabnahmeprotokoll E-Klausur'), 1, 0, 'C');
         }
-        // Line break
+
+        // ALT
         $this->Ln(20);
+        // NEU
+        //$this->Ln(14);
     }
 
     // Page footer
@@ -43,6 +46,7 @@ class export_pdf extends FPDF {
     {
 
         $type = optional_param('type', '', PARAM_TEXT);
+        //----- Qualitaetsmanagement //.
         if ($type == "qm") {
             // Position at 1.5 cm from bottom
             $this->SetY(-15);
@@ -50,12 +54,15 @@ class export_pdf extends FPDF {
             $this->SetFont('Arial','I',7);
             // Page number
             $this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');
-        } else {
+        }
+        //----- Endabnahme //.
+        else {
             // Arial italic 8
             //$this->SetFont('Arial', 'I', 8);
             $this->SetFont('Arial','',9);
 
             if ($this->PageNo() == 1) {
+
                 $this->SetY(-40);
                 $this->Cell(0, 10, '__________________________________                                           ____________________________________', 0, 0, 'C');
                 $this->SetY(-35);
@@ -74,13 +81,20 @@ class export_pdf extends FPDF {
                 //$this->SetY(125);
                 //$this->Cell(0, 10, iconv('UTF-8', 'windows-1252', get_string("Es_wird_vom_Fachgebiet", "elediachecklist")), 0, 0, 'L');
 
+                // Bemerkungen, String //.
                 $this->SetFont('Arial', 'B', 10);
-                $this->SetY(130);
+                // ALT
+                //$this->SetY(130);
+                // NEU
+                $this->SetY(136);
                 $this->Cell(0, 10, "Bemerkungen:", 0, 0, 'L');
 
-
+                // Bemerkungen, Inhalt //.
                 $this->SetFont('Arial', '', 9);
-                $this->SetY(137);
+                // ALT
+                //$this->SetY(137);
+                // NEU
+                $this->SetY(143);
                 $inp = '';
                 if(isset($_REQUEST['commentsEA'])) {
                     //$inp = base64_decode($_REQUEST["commentsEA"]);
@@ -92,8 +106,11 @@ class export_pdf extends FPDF {
                 }
                 $this->MultiCell(0, 5, iconv('UTF-8', 'windows-1252', $inp), 0, 'L', false);
 
-
-                $this->SetY(160);
+                // Datum
+                // ALT
+                //$this->SetY(160);
+                // NEU
+                $this->SetY(171);
                 $this->Cell(0, 10, iconv('UTF-8', 'windows-1252', get_string("Place_pdf", "elediachecklist") . ", " . date('d.m.Y', time())), 0, 0, 'L');
             }
             // Position at 1.5 cm from bottom
@@ -217,11 +234,7 @@ if (isset($_REQUEST['commentsEA']) ) {
     //foter page
     $pdf->AliasNbPages();
 
-    //----- ALT -> $myrow
-    //    $mydozent = mysqli#query($mysqli, "SELECT dozent.firstname, dozent.lastname, exam.examtimestart FROM mdl_eledia_adminexamdates exam, mdl_user dozent
-    //WHERE exam.id = " . $examid . " AND dozent.id = exam.examiner") or die("database error:" . mysqli_error($mysqli));
-    //    $myrow = $mydozent->fetch_row();
-    //----- NEU -> $myrow
+    // $myrow
     $sql  = "SELECT ";
     $sql .= "exam.id, exam.examiner, ";
     //$sql .= "dozent.firstname, dozent.lastname, ";
@@ -233,9 +246,9 @@ if (isset($_REQUEST['commentsEA']) ) {
     //echo '<pre>'.print_r($exams, true).'</pre>';
     // Start
     $myrow = array(
-            0 => '',
-            1 => '',
-            2 => 0, // tp
+            0 => '', // firstname
+            1 => '', // lastname
+            2 => 0,  // tp, examtimestart
     );
     foreach($exams as $exam) {
         $sql = "SELECT id, firstname, lastname FROM {user} WHERE id IN (".$exam->examiner.")";
@@ -253,23 +266,22 @@ if (isset($_REQUEST['commentsEA']) ) {
     //echo '<pre>'.print_r($myrow, true).'</pre>';
 
     $arrdozent = array();
-    $sql = "SELECT id, firstname, lastname FROM {user} WHERE id IN (".$exam->examiner.")";
-    $res = $DB->get_records_sql($sql);
-    foreach($res as $one) {
-        $name = trim($one->firstname.' '.$one->lastname);
-        $arrdozent[] = $name;
+    if(isset($exam->examiner)  &&  trim($exam->examiner) != '') {
+        $sql = "SELECT id, firstname, lastname FROM {user} WHERE id IN (" . $exam->examiner . ")";
+        $res = $DB->get_records_sql($sql);
+        foreach ($res as $one) {
+            $name = trim($one->firstname . ' ' . $one->lastname);
+            $arrdozent[] = $name;
+        }
+        sort($arrdozent, SORT_NATURAL);
     }
-    sort($arrdozent, SORT_NATURAL);
     //echo '<pre>'.print_r($arrdozent, true).'</pre>';
 
     //Klausur date
     $examdate = $myrow[2];
     $examdate = date('r', $myrow[2]);
     //Get Topic Klausur
-    //----- ALT -> $klausurrow
-    //$klausuritem = mysqli#query($mysqli, "SELECT duetime from mdl_elediachecklist_item where id = 18") or die("database error:" . mysqli_error($mysqli));
-    //$klausurrow = $klausuritem->fetch_row();
-    //----- NEU -> $klausurrow -> $klausurrow[0]
+    // $klausurrow -> $klausurrow[0]
     $sql = "SELECT id, duetime from mdl_elediachecklist_item where id = 18";
     $res = $DB->get_records_sql($sql);
     $klausurrow = array(0 => '');
@@ -280,10 +292,7 @@ if (isset($_REQUEST['commentsEA']) ) {
     //echo '<pre>'.print_r($klausurrow, true).'</pre>';
 
     //Get Exam name
-    //----- ALT -> $examName
-    //$examResult = mysqli#query($mysqli, "SELECT examname from mdl_eledia_adminexamdates where id = " . $examid) or die("database error:" . mysqli_error($mysqli));
-    //$examName = $examResult->fetch_row();
-    //----- NEU -> $examName -> $examName[0]
+    // $examName -> $examName[0]
     $sql = "SELECT id, examname from {eledia_adminexamdates} where id = " . $examid;
     $res = $DB->get_records_sql($sql);
     $examName = array(0 => '');
@@ -294,22 +303,24 @@ if (isset($_REQUEST['commentsEA']) ) {
     //echo '<pre>'.print_r($examName, true).'</pre>'; die();
 
     $pdf->SetFont('Arial', '', 9);
-    $pdf->Cell(80);
-    // Title
-    $pdf->SetX(10);
-    $pdf->Cell(0, 10, iconv('UTF-8', 'windows-1252', 'Klausur:') . ':  ' .$examName[0], 0, 0, 'L');
 
-    $pdf->SetX(110);
+    // Klausur //.
+    $txt = iconv('UTF-8', 'windows-1252', 'Klausur:') . ':  ' .iconv('UTF-8', 'windows-1252', $examName[0]);
+    $pdf->Cell(0, 10, $txt, 0, 0, 'L');
+    $pdf->Ln(5);
+
+    // Klausurdatum //.
+    $pdf->SetX(10);
     $inp = iconv('UTF-8', 'windows-1252', 'Klausurdatum:') . ': ';
     if (isset($myrow[2]) && $myrow[2] != 0) {
-        $inp .= date('d.m.y', strtotime($klausurrow[0] . ' day', strtotime($examdate)));
+        $inp .= date('d.m.Y', strtotime($klausurrow[0] . ' day', strtotime($examdate)));
     }
     $pdf->Cell(0, 10, $inp, 0, 0, 'L');
+    $pdf->Ln(5);
 
-    //$inp = $myrow[0] . " " . $myrow[1];
+    // Dozent //.
     $inp = implode(', ', $arrdozent);
-    //$pdf->SetX(200);
-    $pdf->SetX(180);
+    $pdf->SetX(10);
     $pdf->Cell(0, 10, iconv('UTF-8', 'windows-1252', 'Dozent') . ': ' . iconv('UTF-8', 'windows-1252', $inp), 0, 0, 'L');
 
     // Line break
@@ -317,22 +328,15 @@ if (isset($_REQUEST['commentsEA']) ) {
 
     $pdf->SetFont('Arial', 'B', 10);
 
-    /*foreach($header as $heading) {
-        $pdf->Cell(40,12,$display_heading[$heading['Field']],1);
-    }*/
-    //$pdf->Cell(10,12,'',1);
-    //$pdf->Cell(240,12,'Item',1);
 
     $mywidth = 10;
-    $rownum=1;
-
+    $rownum = 1;
 
     foreach ($result as $row) {
 
         $pdf->Ln();
         $mycell = 0;
 
-        //if ($row["is_checkbox"] == "0") {
         if ($row->is_checkbox == "0") {
             $pdf->SetFont('Arial', 'B', 10);
         } else {
@@ -341,13 +345,11 @@ if (isset($_REQUEST['commentsEA']) ) {
 
         //if ($row["is_checkbox"] == "0") {
         if ($row->is_checkbox == "0") {
-            //if ($mycell <= 1) $pdf->Cell(260, 6, iconv('UTF-8', 'windows-1252', $row["displaytext"]), 1);
             if ($mycell <= 1) $pdf->Cell(260, 6, iconv('UTF-8', 'windows-1252', $row->displaytext), 1);
         } else {
             foreach ($row as $column) {
                 if ($mycell == 0) $mywidth = 10;
                 if ($mycell == 1) $mywidth = 250;
-                //if ($mycell == 0) $pdf->Cell($mywidth, 12, iconv('UTF-8', 'windows-1252', '✅'), 1);
                 if ($mycell <= 1) $pdf->Cell($mywidth, 6, iconv('UTF-8', 'windows-1252', $column), 1, 0, '', false, '', 2);
                 $mycell = $mycell + 1;
             }

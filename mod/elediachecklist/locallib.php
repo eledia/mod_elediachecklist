@@ -521,6 +521,10 @@ class checklist_class {
             $exam->departmentname = (isset($departmentchoices[$exam->department])) ? $departmentchoices[$exam->department] : $exam->department;
             $examDateNameOptions = $examDateNameOptions . "<option value='" . $exam->id . "'>" . $exam->examname . "</option>";
 
+            // NEU, 2022-11-09, siehe module.js
+            $examtimestartinformat = date('d.m.Y, H.i', $exam->examtimestart).' Uhr';
+            $exam->examtimestartinformat = $examtimestartinformat;
+
             //echo '<pre>'.print_r($exam, true).'</pre>';
         }
 
@@ -1438,28 +1442,49 @@ class checklist_class {
 
         $examdate = $DB->get_record('eledia_adminexamdates', ['id' => $examdateid]);
         $examblocks = $DB->get_records('eledia_adminexamdates_blocks', ['examdateid' => $examdate->id]);
+
+        $date  = date('d.m.Y, H.i', $examdate->examtimestart);
+        $date .= ' - ';
+        $date .= date('H.i', $examdate->examtimestart + ($examdate->examduration * 60));
+        $date .= ' Uhr';
+
         $text = '';
         $text .= \html_writer::start_tag('div', array('class' => 'card'));
         $text .= \html_writer::start_tag('div', array('class' => 'card-body'));
         $text .= \html_writer::tag('h5', $examdate->examname, array('class' => 'card-title'));
         $text .= \html_writer::start_tag('p', array('class' => 'card-text'));
         $text .= \html_writer::start_tag('dl');
+
+        // Termin //.
         $text .= \html_writer::tag('dt', get_string('time', 'block_eledia_adminexamdates') . ': ');
-        $text .= \html_writer::tag('dd', date('d.m.Y H.i', $examdate->examtimestart)
-            . ' - ' . date('H.i', $examdate->examtimestart + ($examdate->examduration * 60)));
+        $text .= \html_writer::tag('dd', $date);
+
+        // Erwartete Anzahl der Teilnehmenden //.
         $text .= \html_writer::tag('dt', get_string('number_students', 'block_eledia_adminexamdates') . ': ');
         $text .= \html_writer::tag('dd', $examdate->numberstudents);
+
+        // Dozent:in/ Prüfer:in //
         $text .= \html_writer::tag('dt', get_string('examiner', 'block_eledia_adminexamdates') . ': ');
         $text .= \html_writer::tag('dd', $examdate->examiner);
+
+        // Ansprechpartner:in //.
         $text .= \html_writer::tag('dt', get_string('contactperson', 'block_eledia_adminexamdates') . ': ');
         $text .= \html_writer::tag('dd', $examdate->contactperson);
 
+        // 1. Teiltermin //.
         $index = 1;
         foreach ($examblocks as $examblock) {
             $text .= \html_writer::tag('dt', $index . '. Teiltermin');
 
-            $text .= \html_writer::tag('dd', date('d.m.Y H.i', $examblock->blocktimestart)
-                . ' - ' . date('H.i', $examblock->blocktimestart + ($examdate->examduration * 60)));
+            $date  = date('d.m.Y, H.i', $examblock->blocktimestart);
+            $date .= ' - ';
+            $date .= date('H.i', $examblock->blocktimestart + ($examdate->examduration * 60));
+            $date .= ' Uhr';
+            $text .= \html_writer::tag('dd', $date);
+
+            //$text .= \html_writer::tag('dd', date('d.m.Y H.i', $examblock->blocktimestart)
+            //    . ' - ' . date('H.i', $examblock->blocktimestart + ($examdate->examduration * 60)));
+
             $index++;
         }
         $text .= \html_writer::end_tag('dl');

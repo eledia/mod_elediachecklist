@@ -176,8 +176,12 @@ function loadLeftPanelData(examId) {
             $("#scl_verantwortlicher").val(exams[i].responsibleperson);
             $("#erwartete_anzahl_pruflinge").val(exams[i].numberstudents);
 
-            var examDate = new Date(exams[i].examtimestart * 1000);
-            $("#datum").val(examDate.toLocaleString("de-DE"));
+            // ALT
+            //var examDate = new Date(exams[i].examtimestart * 1000);
+            //$("#datum").val(examDate.toLocaleString("de-DE"));
+            // NEU
+            $("#datum").val(exams[i].examtimestartinformat);
+
             $("#datumraw").val(exams[i].examtimestart * 1000);
         }
     }
@@ -209,9 +213,12 @@ function changeExamDateDropdown(examId, courseid) {
             $("#scl_verantwortlicher").val(exams[i].responsibleperson);
             $("#erwartete_anzahl_pruflinge").val(exams[i].numberstudents);
 
+            // ALT
+            //var examDate = new Date(exams[i].examtimestart*1000);
+            //$("#datum").val(examDate.toLocaleString("de-DE"));
+            // NEU
+            $("#datum").val(exams[i].examtimestartinformat);
 
-            var examDate = new Date(exams[i].examtimestart*1000);
-            $("#datum").val(examDate.toLocaleString("de-DE"));
             $("#datumraw").val(exams[i].examtimestart*1000);
 
             //Load exam topic list
