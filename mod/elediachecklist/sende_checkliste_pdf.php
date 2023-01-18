@@ -127,7 +127,8 @@ class PDF extends TCPDF {
 
 // DATEN //.
 
-$sql = "SELECT * FROM {elediachecklist_item} ORDER BY position ASC";
+//$sql = "SELECT * FROM {elediachecklist_item} ORDER BY position ASC";
+$sql = "SELECT * FROM {elediachecklist_item} ORDER BY duetime ASC, displaytext ASC";
 $examTopics = $DB->get_records_sql($sql);
 
 

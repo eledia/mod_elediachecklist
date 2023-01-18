@@ -809,7 +809,7 @@ class mod_elediachecklist_renderer extends plugin_renderer_base {
                     }
 
                     // Link (if any).
-                    echo $this->checklist_item_link($item);
+                    echo $this->elediachecklist_item_link($item);
                 }
 
                 if ($status->get_additemafter() == $item->id) {

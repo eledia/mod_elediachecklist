@@ -49,36 +49,47 @@ class provider implements \core_privacy\local\metadata\provider,
      * @return collection
      */
     public static function get_metadata(collection $collection) : collection {
+        // 'checklist_XXX' ueberall geaendert zu 'elediachecklist_XXX'
+        // 'elediachecklist_item' ... erstmal so lassen
+        // /tests/privacy_provider_test.php (irgendwann nachziehen)
+        // DIE ANGABEN HIER HABEN WOHL NUR REINE INFO-ZWECKE?
+        // -----
+        // Es fehlen hier noch die folgenden Tabellen, oder? (2023-01-03), ng
+        // - elediachecklist
+        // - elediachecklist_my_check
+        // - elediachecklist_my_item
+        // - elediachecklist_item_date
+        // -----
         $collection->add_database_table(
-            'checklist_item',
+            'elediachecklist_item',
             [
-                'checklist' => 'privacy:metadata:checklist_item:checklist',
-                'userid' => 'privacy:metadata:checklist_item:userid',
-                'displaytext' => 'privacy:metadata:checklist_item:displaytext',
+                'checklist' => 'privacy:metadata:elediachecklist_item:checklist',
+                'userid' => 'privacy:metadata:elediachecklist_item:userid',
+                'displaytext' => 'privacy:metadata:elediachecklist_item:displaytext',
             ],
-            'privacy:metadata:checklist_item'
+            'privacy:metadata:elediachecklist_item'
         );
         $collection->add_database_table(
-            'checklist_check',
+            'elediachecklist_check',
             [
-                'item' => 'privacy:metadata:checklist_check:item',
-                'userid' => 'privacy:metadata:checklist_check:userid',
-                'usertimestamp' => 'privacy:metadata:checklist_check:usertimestamp',
-                'teachermark' => 'privacy:metadata:checklist_check:teachermark',
-                'teachertimestamp' => 'privacy:metadata:checklist_check:teachertimestamp',
-                'teacherid' => 'privacy:metadata:checklist_check:teacherid',
+                'item' => 'privacy:metadata:elediachecklist_check:item',
+                'userid' => 'privacy:metadata:elediachecklist_check:userid',
+                'usertimestamp' => 'privacy:metadata:elediachecklist_check:usertimestamp',
+                'teachermark' => 'privacy:metadata:elediachecklist_check:teachermark',
+                'teachertimestamp' => 'privacy:metadata:elediachecklist_check:teachertimestamp',
+                'teacherid' => 'privacy:metadata:elediachecklist_check:teacherid',
             ],
-            'privacy:metadata:checklist_check'
+            'privacy:metadata:elediachecklist_check'
         );
         $collection->add_database_table(
-            'checklist_comment',
+            'elediachecklist_comment',
             [
-                'itemid' => 'privacy:metadata:checklist_comment:itemid',
-                'userid' => 'privacy:metadata:checklist_comment:userid',
-                'commentby' => 'privacy:metadata:checklist_comment:commentby',
-                'text' => 'privacy:metadata:checklist_comment:text',
+                'itemid' => 'privacy:metadata:elediachecklist_comment:itemid',
+                'userid' => 'privacy:metadata:elediachecklist_comment:userid',
+                'commentby' => 'privacy:metadata:elediachecklist_comment:commentby',
+                'text' => 'privacy:metadata:elediachecklist_comment:text',
             ],
-            'privacy:metadata:checklist_comment'
+            'privacy:metadata:elediachecklist_comment'
         );
         return $collection;
     }
@@ -94,7 +105,7 @@ class provider implements \core_privacy\local\metadata\provider,
     private static function get_modid() {
         global $DB;
         if (self::$modid === null) {
-            self::$modid = $DB->get_field('modules', 'id', ['name' => 'checklist']);
+            self::$modid = $DB->get_field('modules', 'id', ['name' => 'elediachecklist']);
         }
         return self::$modid;
     }
@@ -124,7 +135,7 @@ class provider implements \core_privacy\local\metadata\provider,
              FROM {context} c
              JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                                       AND cm.module = :modid
-             JOIN {checklist} ck ON ck.id = cm.instance
+             JOIN {elediachecklist} ck ON ck.id = cm.instance
              JOIN {elediachecklist_item} ci ON ci.checklist = ck.id
             WHERE ci.userid = :userid
         ';
@@ -136,7 +147,7 @@ class provider implements \core_privacy\local\metadata\provider,
              FROM {context} c
              JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                                       AND cm.module = :modid
-             JOIN {checklist} ck ON ck.id = cm.instance
+             JOIN {elediachecklist} ck ON ck.id = cm.instance
              JOIN {elediachecklist_item} ci ON ci.checklist = ck.id
              JOIN {elediachecklist_check} cc ON cc.item = ci.id
             WHERE cc.userid = :userid
@@ -149,7 +160,7 @@ class provider implements \core_privacy\local\metadata\provider,
              FROM {context} c
              JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                                       AND cm.module = :modid
-             JOIN {checklist} ck ON ck.id = cm.instance
+             JOIN {elediachecklist} ck ON ck.id = cm.instance
              JOIN {elediachecklist_item} ci ON ci.checklist = ck.id
              JOIN {elediachecklist_comment} ccm ON ccm.itemid = ci.id
             WHERE ccm.userid = :userid
@@ -183,7 +194,7 @@ class provider implements \core_privacy\local\metadata\provider,
         $sql = "
             SELECT ci.userid
               FROM {elediachecklist_item} ci
-              JOIN {checklist} ck ON ck.id = ci.checklist
+              JOIN {elediachecklist} ck ON ck.id = ci.checklist
               JOIN {course_modules} cm ON cm.instance = ck.id AND cm.module = :modid
               JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :contextlevel
              WHERE ctx.id = :contextid
@@ -195,7 +206,7 @@ class provider implements \core_privacy\local\metadata\provider,
             SELECT cc.userid
               FROM {elediachecklist_check} cc
               JOIN {elediachecklist_item} ci ON ci.id = cc.item
-              JOIN {checklist} ck ON ck.id = ci.checklist
+              JOIN {elediachecklist} ck ON ck.id = ci.checklist
               JOIN {course_modules} cm ON cm.instance = ck.id AND cm.module = :modid
               JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :contextlevel
              WHERE ctx.id = :contextid
@@ -207,7 +218,7 @@ class provider implements \core_privacy\local\metadata\provider,
             SELECT ccm.userid
               FROM {elediachecklist_comment} ccm
               JOIN {elediachecklist_item} ci ON ci.id = ccm.itemid
-              JOIN {checklist} ck ON ck.id = ci.checklist
+              JOIN {elediachecklist} ck ON ck.id = ci.checklist
               JOIN {course_modules} cm ON cm.instance = ck.id AND cm.module = :modid
               JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :contextlevel
              WHERE ctx.id = :contextid
@@ -242,7 +253,7 @@ class provider implements \core_privacy\local\metadata\provider,
 
                  FROM {context} c
                  JOIN {course_modules} cm ON cm.id = c.instanceid
-                 JOIN {checklist} ck ON ck.id = cm.instance
+                 JOIN {elediachecklist} ck ON ck.id = cm.instance
                  JOIN {elediachecklist_item} ci ON ci.checklist = ck.id
                  LEFT JOIN {elediachecklist_check} cc ON cc.item = ci.id
                  LEFT JOIN {elediachecklist_comment} ccm ON ccm.itemid = ci.id
@@ -323,11 +334,11 @@ class provider implements \core_privacy\local\metadata\provider,
         if (!$cm = get_coursemodule_from_id('elediachecklist', $context->instanceid)) {
             return;
         }
-        $itemids = $DB->get_fieldset_select('checklist_item', 'id', 'checklist = ?', [$cm->instance]);
+        $itemids = $DB->get_fieldset_select('elediachecklist_item', 'id', 'checklist = ?', [$cm->instance]);
         if ($itemids) {
             $DB->delete_records_list('elediachecklist_check', 'item', $itemids);
             $DB->delete_records_list('elediachecklist_comment', 'itemid', $itemids);
-            $DB->delete_records_select('checklist_item', 'checklist = ? AND userid <> 0', [$cm->instance]);
+            $DB->delete_records_select('elediachecklist_item', 'checklist = ? AND userid <> 0', [$cm->instance]);
         }
     }
 
@@ -351,14 +362,14 @@ class provider implements \core_privacy\local\metadata\provider,
             if (!$cm = get_coursemodule_from_id('elediachecklist', $context->instanceid)) {
                 continue;
             }
-            $itemids = $DB->get_fieldset_select('checklist_item', 'id', 'checklist = ?', [$cm->instance]);
+            $itemids = $DB->get_fieldset_select('elediachecklist_item', 'id', 'checklist = ?', [$cm->instance]);
             if ($itemids) {
                 list($isql, $params) = $DB->get_in_or_equal($itemids, SQL_PARAMS_NAMED);
                 $params['userid'] = $userid;
-                $DB->delete_records_select('checklist_check', "item $isql AND userid = :userid", $params);
-                $DB->delete_records_select('checklist_comment', "itemid $isql AND userid = :userid", $params);
+                $DB->delete_records_select('elediachecklist_check', "item $isql AND userid = :userid", $params);
+                $DB->delete_records_select('elediachecklist_comment', "itemid $isql AND userid = :userid", $params);
                 $params = ['instanceid' => $cm->instance, 'userid' => $userid];
-                $DB->delete_records_select('checklist_item', 'checklist = :instanceid AND userid = :userid', $params);
+                $DB->delete_records_select('elediachecklist_item', 'checklist = :instanceid AND userid = :userid', $params);
             }
         }
     }
@@ -383,28 +394,28 @@ class provider implements \core_privacy\local\metadata\provider,
         }
 
         // Prepare SQL to gather all completed IDs.
-        $itemids = $DB->get_fieldset_select('checklist_item', 'id', 'checklist = ?', [$cm->instance]);
+        $itemids = $DB->get_fieldset_select('elediachecklist_item', 'id', 'checklist = ?', [$cm->instance]);
         list($itsql, $itparams) = $DB->get_in_or_equal($itemids, SQL_PARAMS_NAMED);
         $userids = $userlist->get_userids();
         list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
 
         // Delete user-created personal checklist items.
         $DB->delete_records_select(
-            'checklist_item',
+            'elediachecklist_item',
             "userid $insql AND checklist = :checklistid",
             array_merge($inparams, ['checklistid' => $cm->instance])
         );
 
         // Delete items that have been checked-off by the user (or for the user, by their teacher).
         $DB->delete_records_select(
-            'checklist_check',
+            'elediachecklist_check',
             "userid $insql AND item $itsql",
             array_merge($inparams, $itparams)
         );
 
         // Delete comments made by a teacher about a particular item for a student.
         $DB->delete_records_select(
-            'checklist_comment',
+            'elediachecklist_comment',
             "userid $insql AND itemid $itsql",
             array_merge($inparams, $itparams)
         );

@@ -43,10 +43,10 @@ $userid = 0;
 $context = context_course::instance($courseid);
 $PAGE->set_context($context);
 
-//----- ALT
-//$examTopics = $DB->get_records("elediachecklist_item");
-//----- NEU
-$sql = "SELECT * FROM {elediachecklist_item} WHERE checklist = ".$checklist." ORDER BY position ASC";
+$sql  = "SELECT * FROM {elediachecklist_item} ";
+$sql .= "WHERE checklist = ".$checklist." ";
+//$sql .= "ORDER BY position ASC ";
+$sql .= "ORDER BY duetime ASC, displaytext ASC ";
 $examTopics = $DB->get_records_sql($sql);
 
 $htmlTopics = '';
@@ -59,6 +59,7 @@ if ($examid == -1) {
         $htmlTopics = $htmlTopics . "<tr><td style='padding-left: 30px;'><input class='form-check-input' type='checkbox' disabled>" . $topic->displaytext . "<br/><td style='text-align: center;'> - </td><td>-</td><td>-</td></tr>";
     }
 } else {
+    $cnt = 1;
     foreach ($examTopics as &$topic) {
 
         $isChecked = "";
@@ -75,9 +76,22 @@ if ($examid == -1) {
             $htmlTopics = $htmlTopics . "<tr>
                 <td style='padding-left: 30px;'><input class='form-check-input' id='topicCheck" . $topic->id . "' onclick='toggleTopic(" . $topic->id . ", " . $examid . ")' type='checkbox' value='" . $topic->id . "' " . $isChecked . ">" . $topic->displaytext  . " <span onclick=\"alert('hola2')\">  📆 </span><br/>";
         } else {*/
-            $htmlTopics = $htmlTopics . "<tr>
-                <td style='padding-left: 30px;'><input class='form-check-input' id='topicCheck" . $topic->id . "' onclick='toggleTopic(" . $topic->id . ", " . $examid . ")' type='checkbox' value='" . $topic->id . "' " . $isChecked . ">" . $topic->displaytext . "<br/>";
+
+            $add  = "<tr>";
+            $add .= "<td style='padding-left: 30px;'>";
+            $add .= "<input class='form-check-input' id='topicCheck" . $topic->id . "' onclick='toggleTopic(" . $topic->id . ", " . $examid . ")' type='checkbox' value='" . $topic->id . "' " . $isChecked . ">";
+            $add .= $topic->displaytext;
+            // Onmouseover-Info
+            $add .= "<span title='i = ".$cnt." / id = ".$topic->id." / pos = ".$topic->position."'>&nbsp;&nbsp;&nbsp;</span>";
+            $add .= "</td>";
+
+            $htmlTopics = $htmlTopics . $add;
+
+            // ALT
+            //$htmlTopics = $htmlTopics . "<tr>
+            //    <td style='padding-left: 30px;'><input class='form-check-input' id='topicCheck" . $topic->id . "' onclick='toggleTopic(" . $topic->id . ", " . $examid . ")' type='checkbox' value='" . $topic->id . "' " . $isChecked . ">" . $topic->displaytext . "<br/>";
         //}
+
         if ($PAGE->user_is_editing() and is_siteadmin()) {
             $htmlTopics = $htmlTopics . "<td style='text-align: center;'>" . $topic->duetime . "</td>";
         }
@@ -94,6 +108,8 @@ if ($examid == -1) {
             $htmlTopics = $htmlTopics . "<td><div style='cursor: pointer' onclick='prepareEditTopic(" . $topic->id . ",\"" . $topic->displaytext . "\", " . $topic->duetime . ", \"" . $topic->emailtext . "\")'>✍</div></td>";
         }
         $htmlTopics = $htmlTopics . "</tr>";
+
+        $cnt++;
     }
 }
 

@@ -44,7 +44,7 @@ class checklist_completed extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'u';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
-        $this->data['objecttable'] = 'checklist';
+        $this->data['objecttable'] = 'elediachecklist';
     }
 
     /**
@@ -91,7 +91,7 @@ class checklist_completed extends \core\event\base {
      * @return string[]
      */
     public static function get_objectid_mapping() {
-        return ['db' => 'eledia', 'restore' => 'checklist'];
+        return ['db' => 'elediachecklist', 'restore' => 'elediachecklist'];
     }
 }
 

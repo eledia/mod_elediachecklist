@@ -39,14 +39,17 @@ require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/elediachecklist:edit', $context);
 
-$items = $DB->get_records_select('checklist_item', "checklist = ? AND userid = 0", array($checklist->id), 'position');
+$items = $DB->get_records_select('elediachecklist_item', "checklist = ? AND userid = 0", array($checklist->id), 'position');
 if (!$items) {
     throw new moodle_exception('noitems', 'mod_elediachecklist');
 }
 
 $csv = new csv_export_writer();
-$strchecklist = get_string('eledia', 'checklist');
-$csv->filename = clean_filename("{$course->shortname} $strchecklist {$checklist->name}").'.csv';
+$strchecklist = get_string('eledia', 'elediachecklist');
+//$filename = $course->shortname.'_'.$strchecklist.'_'.$checklist->name;
+$filename = $course->shortname.'_'.$checklist->name;
+$filename = str_replace(' ', '', $filename);
+$csv->filename = clean_filename($filename).'.csv';
 
 // Output the headings.
 $csv->add_data($fields);

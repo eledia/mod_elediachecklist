@@ -41,7 +41,7 @@ class checklist_item extends data_object {
     public $table = 'elediachecklist_item';
     /** @var string[] */
     public $requiredfields = [
-        'id', 'eledia', 'userid', 'displaytext', 'position', 'indent', 'itemoptional', 'duetime',
+        'id', 'checklist', 'userid', 'displaytext', 'position', 'indent', 'itemoptional', 'duetime',
         'eventid', 'colour', 'moduleid', 'hidden', 'groupingid', 'linkcourseid', 'linkurl', 'openlinkinnewwindow'
     ];
 
@@ -124,7 +124,7 @@ class checklist_item extends data_object {
      * @return data_object|false|object
      */
     public static function fetch($params) {
-        return self::fetch_helper('checklist_item', __CLASS__, $params);
+        return self::fetch_helper('elediachecklist_item', __CLASS__, $params);
     }
 
     /**
@@ -383,7 +383,7 @@ class checklist_item extends data_object {
      */
     public function clear_all_student_checks() {
         global $DB;
-        $DB->set_field_select('checklist_check', 'usertimestamp', 0, 'item = ? AND usertimestamp > 0', [$this->id]);
+        $DB->set_field_select('elediachecklist_check', 'usertimestamp', 0, 'item = ? AND usertimestamp > 0', [$this->id]);
     }
 
     /**

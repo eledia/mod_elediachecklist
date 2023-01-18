@@ -58,12 +58,12 @@ class checklist_import_form extends moodleform {
         $mform->addElement('hidden', 'id', 0);
         $mform->setType('id', PARAM_INT);
 
-        $mform->addElement('header', 'formheading', get_string('import', 'checklist'));
+        $mform->addElement('header', 'formheading', get_string('import', 'elediachecklist'));
 
-        $mform->addElement('filepicker', 'importfile', get_string('importfile', 'checklist'), null,
+        $mform->addElement('filepicker', 'importfile', get_string('importfile', 'elediachecklist'), null,
                            array('accepted_types' => array('*.csv')));
 
-        $this->add_action_buttons(true, get_string('import', 'checklist'));
+        $this->add_action_buttons(true, get_string('import', 'elediachecklist'));
     }
 }
 
@@ -84,7 +84,7 @@ if ($data = $form->get_data()) {
     if (!$csv->load_csv_content($form->get_file_content('importfile'), 'utf-8', 'comma')) {
         die($csv->get_error());
     }
-    $position = $DB->count_records('checklist_item', array('checklist' => $checklist->id, 'userid' => 0)) + 1;
+    $position = $DB->count_records('elediachecklist_item', array('checklist' => $checklist->id, 'userid' => 0)) + 1;
 
     $csv->init();
 
@@ -141,7 +141,7 @@ if ($data = $form->get_data()) {
     }
 }
 
-$strchecklist = get_string('modulename', 'checklist');
+$strchecklist = get_string('modulename', 'elediachecklist');
 $pagetitle = strip_tags($course->shortname.': '.$strchecklist.': '.format_string($checklist->name, true));
 
 $PAGE->set_title($pagetitle);

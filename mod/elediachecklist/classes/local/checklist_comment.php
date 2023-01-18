@@ -79,7 +79,7 @@ class checklist_comment extends data_object {
      * @return data_object|false|object
      */
     public static function fetch($params) {
-        return self::fetch_helper('eledia_checklist_comment', __CLASS__, $params);
+        return self::fetch_helper('elediachecklist_comment', __CLASS__, $params);
     }
 
     /**
@@ -112,7 +112,7 @@ class checklist_comment extends data_object {
 
         list($isql, $params) = $DB->get_in_or_equal($itemids, SQL_PARAMS_NAMED);
         $params['userid'] = $userid;
-        $comments = $DB->get_records_select('eledia_checklist_comment', "userid = :userid AND itemid $isql", $params);
+        $comments = $DB->get_records_select('elediachecklist_comment', "userid = :userid AND itemid $isql", $params);
         foreach ($comments as $comment) {
             $ret[$comment->itemid] = new checklist_comment();
             self::set_properties($ret[$comment->itemid], $comment);

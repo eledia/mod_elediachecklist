@@ -79,6 +79,19 @@ require_once($CFG->libdir.'/completionlib.php');
 function elediachecklist_add_instance($checklist) {
     global $DB;
 
+    //$str = __FUNCTION__;
+    //norbertLog($str);
+    //$str = 'id = '.$id;
+    //norbertLog($str);
+    //die();
+
+    // SCHUTZ !!! BIS RICHTIGE LOESUNG DA IST!!
+    // ng ???
+//    if($checklist->id == 1) {
+//        return 1;
+//    }
+
+
     $checklist->timecreated = time();
     $checklist->id = $DB->insert_record('elediachecklist', $checklist);
 
@@ -102,6 +115,12 @@ function elediachecklist_add_instance($checklist) {
  */
 function elediachecklist_update_instance($checklist) {
     global $DB;
+
+    //$str = __FUNCTION__;
+    //norbertLog($str);
+    //$str = 'id = '.$id;
+    //norbertLog($str);
+    //die();
 
     $checklist->timemodified = time();
     $checklist->id = $checklist->instance;
@@ -177,7 +196,14 @@ function elediachecklist_update_instance($checklist) {
  * @return boolean Success/Failure
  */
 function elediachecklist_delete_instance($id) {
+
     global $DB;
+
+    //$str = __FUNCTION__;
+    //norbertLog($str);
+    //$str = 'id = '.$id;
+    //norbertLog($str);
+    //die();
 
     if (!$checklist = $DB->get_record('elediachecklist', array('id' => $id))) {
         return false;
@@ -393,8 +419,8 @@ function elediachecklist_update_grades($checklist, $userid = 0) {
                         || $checklist->emailoncomplete == CHECKLIST_EMAIL_BOTH
                     ) {
                         // Email will be sent to the all teachers who have capability.
-                        $subj = get_string('emailoncompletesubject', 'eledia', $details);
-                        $content = get_string('emailoncompletebody', 'eledia', $details);
+                        $subj = get_string('emailoncompletesubject', 'elediachecklist', $details);
+                        $content = get_string('emailoncompletebody', 'elediachecklist', $details);
                         $content .= new moodle_url('/mod/elediachecklist/view.php', array('id' => $cm->id));
 
                         $groups = groups_get_all_groups($course->id, $grade->userid, $cm->groupingid);
@@ -423,8 +449,8 @@ function elediachecklist_update_grades($checklist, $userid = 0) {
                         || $checklist->emailoncomplete == CHECKLIST_EMAIL_BOTH
                     ) {
                         // Email will be sent to the student who completes this checklist.
-                        $subj = get_string('emailoncompletesubjectown', 'eledia', $details);
-                        $content = get_string('emailoncompletebodyown', 'eledia', $details);
+                        $subj = get_string('emailoncompletesubjectown', 'elediachecklist', $details);
+                        $content = get_string('emailoncompletebodyown', 'elediachecklist', $details);
                         $content .= new moodle_url('/mod/elediachecklist/view.php', array('id' => $cm->id));
 
                         $recipientstudent = $DB->get_record('user', array('id' => $grade->userid));
@@ -483,7 +509,7 @@ function elediachecklist_grade_item_delete($checklist) {
         $checklist->courseid = $checklist->course;
     }
 
-    return grade_update('mod/elediachecklist', $checklist->courseid, 'mod', 'eledia', $checklist->id, 0, null, array('deleted' => 1));
+    return grade_update('mod/elediachecklist', $checklist->courseid, 'mod', 'elediachecklist', $checklist->id, 0, null, array('deleted' => 1));
 }
 
 /**
@@ -514,7 +540,7 @@ function elediachecklist_grade_item_update($checklist, $grades = null) {
         $grades = null;
     }
 
-    return grade_update('mod/elediachecklist', $checklist->courseid, 'mod', 'eledia', $checklist->id, 0, $grades, $params);
+    return grade_update('mod/elediachecklist', $checklist->courseid, 'mod', 'elediachecklist', $checklist->id, 0, $grades, $params);
 }
 
 /**
@@ -538,7 +564,7 @@ function elediachecklist_user_outline($course, $user, $mod, $checklist) {
 
     $sel = 'checklist = ? AND userid = 0 AND itemoptional = '.CHECKLIST_OPTIONAL_NO;
     $sel .= ' AND hidden = '.CHECKLIST_HIDDEN_NO." AND $groupingsql";
-    $items = $DB->get_records_select('checklist_item', $sel, array($checklist->id), '', 'id');
+    $items = $DB->get_records_select('elediachecklist_item', $sel, array($checklist->id), '', 'id');
     if (!$items) {
         return null;
     }
@@ -556,7 +582,7 @@ function elediachecklist_user_outline($course, $user, $mod, $checklist) {
     }
     $params = array_merge(array($user->id), $iparams);
 
-    $checks = $DB->get_records_select('checklist_check', $sql, $params, $order);
+    $checks = $DB->get_records_select('elediachecklist_check', $sql, $params, $order);
 
     $return = null;
     if ($checks) {
@@ -570,7 +596,7 @@ function elediachecklist_user_outline($course, $user, $mod, $checklist) {
             $return->time = $check->teachertimestamp;
         }
         $percent = sprintf('%0d', ($ticked * 100) / $total);
-        $return->info = get_string('progress', 'checklist').': '.$ticked.'/'.$total.' ('.$percent.'%)';
+        $return->info = get_string('progress', 'elediachecklist').': '.$ticked.'/'.$total.' ('.$percent.'%)';
     }
 
     return $return;
@@ -616,7 +642,7 @@ function elediachecklist_print_recent_activity($course, $isteacher, $timestart) 
 function elediachecklist_print_overview($courses, &$htmlarray) {
     global $USER, $CFG, $DB;
 
-    $config = get_config('checklist');
+    $config = get_config('elediachecklist');
     if (isset($config->showmymoodle) && !$config->showmymoodle) {
         return; // Disabled via global config.
     }
@@ -634,7 +660,7 @@ function elediachecklist_print_overview($courses, &$htmlarray) {
         return;
     }
 
-    $strchecklist = get_string('modulename', 'checklist');
+    $strchecklist = get_string('modulename', 'elediachecklist');
 
     foreach ($checklists as $checklist) {
         $showall = true;
@@ -662,7 +688,7 @@ function elediachecklist_print_overview($courses, &$htmlarray) {
 
         if ($showall) { // Show all items whether or not they are checked off (as this user is unable to check them off).
             $groupingsql = checklist_class::get_grouping_sql($USER->id, $checklist->course);
-            $dateitems = $DB->get_records_select('checklist_item',
+            $dateitems = $DB->get_records_select('elediachecklist_item',
                                                  "checklist = ? AND duetime > 0 AND $groupingsql",
                                                  array($checklist->id),
                                                  'duetime');
@@ -777,8 +803,8 @@ function elediachecklist_uninstall() {
  * @param HTML_QuickForm $mform
  */
 function elediachecklist_reset_course_form_definition(&$mform) {
-    $mform->addElement('header', 'checklistheader', get_string('modulenameplural', 'checklist'));
-    $mform->addElement('checkbox', 'reset_checklist_progress', get_string('resetchecklistprogress', 'checklist'));
+    $mform->addElement('header', 'checklistheader', get_string('modulenameplural', 'elediachecklist'));
+    $mform->addElement('checkbox', 'reset_checklist_progress', get_string('resetchecklistprogress', 'elediachecklist'));
 }
 
 /**
@@ -799,8 +825,8 @@ function elediachecklist_reset_userdata($data) {
     global $DB;
 
     $status = array();
-    $component = get_string('modulenameplural', 'checklist');
-    $typestr = get_string('resetchecklistprogress', 'checklist');
+    $component = get_string('modulenameplural', 'elediachecklist');
+    $typestr = get_string('resetchecklistprogress', 'elediachecklist');
     $status[] = array('component' => $component, 'item' => $typestr, 'error' => false);
 
     if (!empty($data->reset_checklist_progress)) {
@@ -810,7 +836,7 @@ function elediachecklist_reset_userdata($data) {
         }
 
         [$csql, $cparams] = $DB->get_in_or_equal(array_keys($checklists));
-        $items = $DB->get_records_select('checklist_item', 'checklist '.$csql, $cparams);
+        $items = $DB->get_records_select('elediachecklist_item', 'checklist '.$csql, $cparams);
         if (!$items) {
             return $status;
         }
@@ -820,7 +846,7 @@ function elediachecklist_reset_userdata($data) {
         $DB->delete_records_list('elediachecklist_comment', 'itemid', $itemids);
 
         $sql = "checklist $csql AND userid <> 0";
-        $DB->delete_records_select('checklist_item', $sql, $cparams);
+        $DB->delete_records_select('elediachecklist_item', $sql, $cparams);
 
         // Reset the grades.
         foreach ($checklists as $checklist) {
@@ -894,8 +920,9 @@ function elediachecklist_supports($feature) {
             return true;
         case FEATURE_COMPLETION_HAS_RULES:
             return true;
+        // !!! //.
         case FEATURE_BACKUP_MOODLE2:
-            return true;
+            return false;
         case FEATURE_SHOW_DESCRIPTION:
             return true;
 
@@ -957,7 +984,7 @@ function elediachecklist_get_coursemodule_info($coursemodule) {
     $result = new cached_cm_info();
     $result->name = $checklist->name;
     if ($coursemodule->showdescription) {
-        $result->content = format_module_intro('eledia', $checklist, $coursemodule->id, false);
+        $result->content = format_module_intro('elediachecklist', $checklist, $coursemodule->id, false);
     }
 
     if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {

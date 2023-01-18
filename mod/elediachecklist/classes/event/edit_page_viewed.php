@@ -42,7 +42,7 @@ class edit_page_viewed extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'r';
         $this->data['edulevel'] = self::LEVEL_TEACHING;
-        $this->data['objecttable'] = 'checklist';
+        $this->data['objecttable'] = 'elediachecklist';
     }
 
     /**
@@ -90,6 +90,6 @@ class edit_page_viewed extends \core\event\base {
      * @return string[]
      */
     public static function get_objectid_mapping() {
-        return ['db' => 'eledia', 'restore' => 'checklist'];
+        return ['db' => 'elediachecklist', 'restore' => 'elediachecklist'];
     }
 }

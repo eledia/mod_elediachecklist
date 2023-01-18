@@ -45,8 +45,8 @@ $event->trigger();
 
 // Get all required stringsnewmodule.
 
-$strchecklists = get_string('modulenameplural', 'checklist');
-$strchecklist = get_string('modulename', 'checklist');
+$strchecklists = get_string('modulenameplural', 'elediachecklist');
+$strchecklist = get_string('modulename', 'elediachecklist');
 
 // Print the header.
 
@@ -61,13 +61,15 @@ if (!$checklists = get_all_instances_in_course('elediachecklist', $course)) {
     die;
 }
 
+//echo '<pre>'.print_r($checklists, true).'</pre>';
+
 // Print the list of instances (your module will probably extend this).
 
 $timenow = time();
 $strname = get_string('name');
 $strweek = get_string('week');
 $strtopic = get_string('topic');
-$strprogress = get_string('progress', 'checklist');
+$strprogress = get_string('progress', 'elediachecklist');
 
 $table = new html_table();
 

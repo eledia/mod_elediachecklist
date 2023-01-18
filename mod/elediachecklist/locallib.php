@@ -537,21 +537,31 @@ class checklist_class {
         //TODO ADD EXAM ID IN SELECT CONDITION
         //$examTopics = $DB->get_records("elediachecklist_item", ['checklist' => $this->checklist->id]);
         //$examTopics = $DB->get_records("elediachecklist_item", ['checklist' => $this->checklist->id]);
-        $sql = "SELECT * FROM {elediachecklist_item} WHERE checklist = ".$this->checklist->id." ORDER BY position ASC";
+        $sql = "SELECT * FROM {elediachecklist_item} WHERE checklist = ".$this->checklist->id." ORDER BY duetime ASC, displaytext ASC";
         $examTopics = $DB->get_records_sql($sql);
         //echo '<pre>'.print_r($examTopics, true).'</pre>';
 
         $htmlTopics = "";
         foreach ($examTopics as &$topic) {
-           /* if ($topic->displaytext == "Endabnahme") {
-                $topic->displaytext = $topic->displaytext . " <span onclick=\"alert(\"hola\")\"'>  📆 </span>";
-            }*/
-            $htmlTopics = $htmlTopics . "<tr><td style='padding-left: 30px;'><input class='form-check-input' type='checkbox' disabled>" . $topic->displaytext . "<br/><td style='text-align: center;'> - </td><td>-</td><td>-</td></tr>";
+
+            //echo '<pre>'.print_r($topic, true).'</pre>';
+
+            $add  = "<tr>";
+            $add .= "<td style='padding-left: 30px;'><input class='form-check-input' type='checkbox' disabled>" . $topic->displaytext . "</td>";
+            $add .= "<td style='text-align: center;'> - </td>";
+            $add .= "<td>-</td>";
+            $add .= "<td>-</td>";
+            $add .= "</tr>";
+
+            $htmlTopics = $htmlTopics . $add;
+            // ALT
+            //$htmlTopics = $htmlTopics . "<tr><td style='padding-left: 30px;'><input class='form-check-input' type='checkbox' disabled>" . $topic->displaytext . "<br/><td style='text-align: center;'> - </td><td>-</td><td>-</td></tr>";
         }
         $this->tabTerminContent = str_replace("{EXAM_TOPICS}", $htmlTopics, $this->tabTerminContent);
 
-        // Ab hier ist die HTML-Tabelle schon 'fertig'
-        // - Die einzelnen tr-Zeilen werden irgendwo noch irgendwie sortiert ???
+        // Ab hier ist die HTML-Tabelle schon 'fertig'.
+        // Die Tabelle wird nochmal neu geschrieben ... warum auch immer.
+        // Siehe: getexamtopics.php
         //echo '<div style="border:1px solid blue;">';
         //echo $this->tabTerminContent;
         //echo '</div>';
@@ -1441,56 +1451,62 @@ class checklist_class {
         $examdateid = $this->myExamId;
 
         $examdate = $DB->get_record('eledia_adminexamdates', ['id' => $examdateid]);
-        $examblocks = $DB->get_records('eledia_adminexamdates_blocks', ['examdateid' => $examdate->id]);
-
-        $date  = date('d.m.Y, H.i', $examdate->examtimestart);
-        $date .= ' - ';
-        $date .= date('H.i', $examdate->examtimestart + ($examdate->examduration * 60));
-        $date .= ' Uhr';
 
         $text = '';
-        $text .= \html_writer::start_tag('div', array('class' => 'card'));
-        $text .= \html_writer::start_tag('div', array('class' => 'card-body'));
-        $text .= \html_writer::tag('h5', $examdate->examname, array('class' => 'card-title'));
-        $text .= \html_writer::start_tag('p', array('class' => 'card-text'));
-        $text .= \html_writer::start_tag('dl');
+        if ($examdate) {
 
-        // Termin //.
-        $text .= \html_writer::tag('dt', get_string('time', 'block_eledia_adminexamdates') . ': ');
-        $text .= \html_writer::tag('dd', $date);
+            $examblocks = $DB->get_records('eledia_adminexamdates_blocks', ['examdateid' => $examdate->id]);
 
-        // Erwartete Anzahl der Teilnehmenden //.
-        $text .= \html_writer::tag('dt', get_string('number_students', 'block_eledia_adminexamdates') . ': ');
-        $text .= \html_writer::tag('dd', $examdate->numberstudents);
-
-        // Dozent:in/ Prüfer:in //
-        $text .= \html_writer::tag('dt', get_string('examiner', 'block_eledia_adminexamdates') . ': ');
-        $text .= \html_writer::tag('dd', $examdate->examiner);
-
-        // Ansprechpartner:in //.
-        $text .= \html_writer::tag('dt', get_string('contactperson', 'block_eledia_adminexamdates') . ': ');
-        $text .= \html_writer::tag('dd', $examdate->contactperson);
-
-        // 1. Teiltermin //.
-        $index = 1;
-        foreach ($examblocks as $examblock) {
-            $text .= \html_writer::tag('dt', $index . '. Teiltermin');
-
-            $date  = date('d.m.Y, H.i', $examblock->blocktimestart);
+            $date = date('d.m.Y, H.i', $examdate->examtimestart);
             $date .= ' - ';
-            $date .= date('H.i', $examblock->blocktimestart + ($examdate->examduration * 60));
+            $date .= date('H.i', $examdate->examtimestart + ($examdate->examduration * 60));
             $date .= ' Uhr';
+
+            $text = '';
+            $text .= \html_writer::start_tag('div', array('class' => 'card'));
+            $text .= \html_writer::start_tag('div', array('class' => 'card-body'));
+            $text .= \html_writer::tag('h5', $examdate->examname, array('class' => 'card-title'));
+            $text .= \html_writer::start_tag('p', array('class' => 'card-text'));
+            $text .= \html_writer::start_tag('dl');
+
+            // Termin //.
+            $text .= \html_writer::tag('dt', get_string('time', 'block_eledia_adminexamdates') . ': ');
             $text .= \html_writer::tag('dd', $date);
 
-            //$text .= \html_writer::tag('dd', date('d.m.Y H.i', $examblock->blocktimestart)
-            //    . ' - ' . date('H.i', $examblock->blocktimestart + ($examdate->examduration * 60)));
+            // Erwartete Anzahl der Teilnehmenden //.
+            $text .= \html_writer::tag('dt', get_string('number_students', 'block_eledia_adminexamdates') . ': ');
+            $text .= \html_writer::tag('dd', $examdate->numberstudents);
 
-            $index++;
+            // Dozent:in/ Prüfer:in //
+            $text .= \html_writer::tag('dt', get_string('examiner', 'block_eledia_adminexamdates') . ': ');
+            $text .= \html_writer::tag('dd', $examdate->examiner);
+
+            // Ansprechpartner:in //.
+            $text .= \html_writer::tag('dt', get_string('contactperson', 'block_eledia_adminexamdates') . ': ');
+            $text .= \html_writer::tag('dd', $examdate->contactperson);
+
+            // 1. Teiltermin //.
+            $index = 1;
+            foreach ($examblocks as $examblock) {
+                $text .= \html_writer::tag('dt', $index . '. Teiltermin');
+
+                $date = date('d.m.Y, H.i', $examblock->blocktimestart);
+                $date .= ' - ';
+                $date .= date('H.i', $examblock->blocktimestart + ($examdate->examduration * 60));
+                $date .= ' Uhr';
+                $text .= \html_writer::tag('dd', $date);
+
+                //$text .= \html_writer::tag('dd', date('d.m.Y H.i', $examblock->blocktimestart)
+                //    . ' - ' . date('H.i', $examblock->blocktimestart + ($examdate->examduration * 60)));
+
+                $index++;
+            }
+
+            $text .= \html_writer::end_tag('dl');
+            $text .= \html_writer::end_tag('p');
+            $text .= \html_writer::end_tag('div');
+            $text .= \html_writer::end_tag('div');
         }
-        $text .= \html_writer::end_tag('dl');
-        $text .= \html_writer::end_tag('p');
-        $text .= \html_writer::end_tag('div');
-        $text .= \html_writer::end_tag('div');
 
         print $text;
 
@@ -1529,8 +1545,13 @@ class checklist_class {
         $this->view_tabs($currenttab);
         $page = optional_param('page', 0, PARAM_INT);
 
-        echo "<br><div style='width: 100%; text-align: center'><a href='" . get_string('databaselink', 'elediachecklist') . "'>📚 Datenbank für Problemfälle</a></div>";
-
+        $href = get_string('databaselink', 'elediachecklist');
+        if(trim($href) != '') {
+            echo "<br /><div style='width: 100%; text-align: center'><a href='" . $href . "'>📚 Datenbank für Problemfälle</a></div>";
+        }
+        else {
+            echo '<br /><div style="width: 100%; text-align: center">Angabe der Datenbank-Instanz nicht vorhanden ("databaselink").</div>';
+        }
 
         $params = array(
             'contextid' => $this->context->id,
@@ -1554,6 +1575,12 @@ class checklist_class {
     public function edit() {
         global $OUTPUT;
 
+        // ng
+        // Keine Ausgabe bei edit.php !!!
+        //$this->view_header();
+        //$this->view_footer();
+        //return;
+
         if (!$this->canedit()) {
             redirect(new moodle_url('/mod/elediachecklist/view.php', array('id' => $this->cm->id)));
         }
@@ -1569,18 +1596,18 @@ class checklist_class {
         //$this->view_name_info();
         print $this->globalLayout;
 
-        $this->view_tabs_fortschritt('edit');
+//        $this->view_tabs_fortschritt('edit');
 
-        $this->process_edit_actions();
+//        $this->process_edit_actions();
 
         if ($this->checklist->autopopulate) {
             // Needs to be done again, just in case the edit actions have changed something.
-            $this->update_items_from_course();
+//            $this->update_items_from_course();
         }
 
-        $this->view_import_export();
+//        $this->view_import_export();
 
-        $this->view_edit_items();
+//        $this->view_edit_items();
 
         $this->view_footer();
     }
@@ -1925,7 +1952,7 @@ class checklist_class {
         }
 
         // Gather some extra details needed in the output.
-        $intro = format_module_intro('eledia', $this->checklist, $this->cm->id);
+        $intro = format_module_intro('elediachecklist', $this->checklist, $this->cm->id);
         $progress = null;
         if ($status->is_showprogressbar()) {
             $progress = $this->get_progress();
@@ -1960,8 +1987,8 @@ class checklist_class {
         $importurl = new moodle_url('/mod/elediachecklist/import.php', array('id' => $this->cm->id));
         $exporturl = new moodle_url('/mod/elediachecklist/export.php', array('id' => $this->cm->id));
 
-        $importstr = get_string('import', 'checklist');
-        $exportstr = get_string('export', 'checklist');
+        $importstr = get_string('import', 'elediachecklist');
+        $exportstr = get_string('export', 'elediachecklist');
 
         echo "<div class='checklistimportexport'>";
         echo "<a href='$importurl'>$importstr</a>&nbsp;&nbsp;&nbsp;<a href='$exporturl'>$exportstr</a>";
@@ -1993,7 +2020,11 @@ class checklist_class {
             $PAGE->requires->yui_module('moodle-mod_elediachecklist-linkselect', 'M.modChecklist.linkselect.init');
         }
 
-        $this->output->checklist_edit_items($this->items, $status);
+        //echo '<pre>'.print_r($this->items, true).'</pre>';
+        //echo '<pre>'.print_r($status, true).'</pre>';
+        //echo get_class($this->output).'<br />';
+
+        $this->output->elediachecklist_edit_items($this->items, $status);
     }
 
     /**
@@ -2038,11 +2069,11 @@ class checklist_class {
         if ($reportsettings->showoptional) {
             echo '<input type="hidden" name="action" value="hideoptional" />';
             echo '<input type="submit" class="btn btn-secondary" name="submit" value="'.
-                get_string('optionalhide', 'checklist').'" />';
+                get_string('optionalhide', 'elediachecklist').'" />';
         } else {
             echo '<input type="hidden" name="action" value="showoptional" />';
             echo '<input type="submit" class="btn btn-secondary" name="submit" value="'.
-                get_string('optionalshow', 'checklist').'" />';
+                get_string('optionalshow', 'elediachecklist').'" />';
         }
         echo '</form>';
 
@@ -2053,11 +2084,11 @@ class checklist_class {
             $editchecks = false;
             echo '<input type="hidden" name="action" value="hideprogressbars" />';
             echo '<input type="submit" class="btn btn-secondary" name="submit" value="'.
-                get_string('showfulldetails', 'checklist').'" />';
+                get_string('showfulldetails', 'elediachecklist').'" />';
         } else {
             echo '<input type="hidden" name="action" value="showprogressbars" />';
             echo '<input type="submit" class="btn btn-secondary" name="submit" value="'.
-                get_string('showprogressbars', 'checklist').'" />';
+                get_string('showprogressbars', 'elediachecklist').'" />';
         }
         echo '</form>';
 
@@ -2066,7 +2097,7 @@ class checklist_class {
                 '" method="post" />';
             echo html_writer::input_hidden_params($thisurl);
             echo '<input type="hidden" name="action" value="updateallchecks"/>';
-            echo '<input type="submit" class="btn btn-secondary" name="submit" value="'.get_string('savechecks', 'checklist').
+            echo '<input type="submit" class="btn btn-secondary" name="submit" value="'.get_string('savechecks', 'elediachecklist').
                 '" />';
         } else if (!$reportsettings->showprogressbars && $this->caneditother()
             && $this->checklist->teacheredit != CHECKLIST_MARKING_STUDENT
@@ -2076,7 +2107,7 @@ class checklist_class {
             echo html_writer::input_hidden_params($thisurl);
             echo '<input type="hidden" name="editchecks" value="on" />';
             echo '<input type="submit" class="btn btn-secondary" name="submit" value="'.
-                get_string('editchecks', 'checklist').'" />';
+                get_string('editchecks', 'elediachecklist').'" />';
             echo '</form>';
         }
 
@@ -2179,7 +2210,7 @@ class checklist_class {
                 foreach ($ausers as $auser) {
                     if ($totalitems) {
                         $iparams['user'] = $auser->id;
-                        $tickeditems = $DB->count_records_select('checklist_check', $sql, $iparams);
+                        $tickeditems = $DB->count_records_select('elediachecklist_check', $sql, $iparams);
                         $percentcomplete = ($tickeditems * 100) / $totalitems;
                     } else {
                         $percentcomplete = 0;
@@ -2188,8 +2219,8 @@ class checklist_class {
 
                     if ($this->caneditother()) {
                         $vslink = ' <a href="'.$thisurl->out(true, array('studentid' => $auser->id)).'" ';
-                        $vslink .= 'alt="'.get_string('viewsinglereport', 'checklist').'" title="'.
-                            get_string('viewsinglereport', 'checklist').'">';
+                        $vslink .= 'alt="'.get_string('viewsinglereport', 'elediachecklist').'" title="'.
+                            get_string('viewsinglereport', 'elediachecklist').'">';
                         $vslink .= $OUTPUT->pix_icon('t/preview', '').'</a>';
                     } else {
                         $vslink = '';
@@ -2256,8 +2287,8 @@ class checklist_class {
                     $row = array();
 
                     $vslink = ' <a href="'.$thisurl->out(true, array('studentid' => $auser->id)).'" ';
-                    $vslink .= 'alt="'.get_string('viewsinglereport', 'checklist').'" title="'.
-                        get_string('viewsinglereport', 'checklist').'">';
+                    $vslink .= 'alt="'.get_string('viewsinglereport', 'elediachecklist').'" title="'.
+                        get_string('viewsinglereport', 'elediachecklist').'">';
                     $vslink .= $OUTPUT->pix_icon('t/preview', '').'</a>';
                     $userurl = new moodle_url('/user/view.php', array('id' => $auser->id, 'course' => $this->course->id));
                     $userlink = '<a href="'.$userurl.'">'.fullname($auser).'</a>';
@@ -2300,7 +2331,7 @@ class checklist_class {
 
             if ($editchecks) {
                 echo '<input type="submit" class="btn btn-secondary" name="submit" value="'.
-                    get_string('savechecks', 'checklist').'" />';
+                    get_string('savechecks', 'elediachecklist').'" />';
                 echo '</form>';
             }
         }
@@ -2363,7 +2394,7 @@ class checklist_class {
 
         $output = '';
 
-        $output .= '<table summary="'.get_string('reporttablesummary', 'checklist').'"';
+        $output .= '<table summary="'.get_string('reporttablesummary', 'elediachecklist').'"';
         $output .= ' cellpadding="5" cellspacing="1" class="generaltable boxaligncenter checklistreport">';
 
         $showteachermark = !($this->checklist->teacheredit == CHECKLIST_MARKING_STUDENT);
@@ -2400,12 +2431,12 @@ class checklist_class {
             $output .= $this->report_add_toggle_button_row($table);
         }
         // Output the data.
-        $tickimg = $OUTPUT->pix_icon('i/grade_correct', get_string('itemcomplete', 'checklist'));
+        $tickimg = $OUTPUT->pix_icon('i/grade_correct', get_string('itemcomplete', 'elediachecklist'));
         $teacherimg = array(
             CHECKLIST_TEACHERMARK_UNDECIDED => $OUTPUT->pix_icon('empty_box',
-                                                                 get_string('teachermarkundecided', 'checklist'), 'checklist'),
-            CHECKLIST_TEACHERMARK_YES => $OUTPUT->pix_icon('tick_box', get_string('teachermarkyes', 'checklist'), 'checklist'),
-            CHECKLIST_TEACHERMARK_NO => $OUTPUT->pix_icon('cross_box', get_string('teachermarkno', 'checklist'), 'checklist'),
+                                                                 get_string('teachermarkundecided', 'elediachecklist'), 'checklist'),
+            CHECKLIST_TEACHERMARK_YES => $OUTPUT->pix_icon('tick_box', get_string('teachermarkyes', 'elediachecklist'), 'checklist'),
+            CHECKLIST_TEACHERMARK_NO => $OUTPUT->pix_icon('cross_box', get_string('teachermarkno', 'elediachecklist'), 'checklist'),
         );
         $oddeven = 1;
         $keys = array_keys($table->data);
@@ -3467,7 +3498,7 @@ class checklist_class {
             // Checklist is auto updating + only showing teacher marks => disable teacher marks for items that auto update.
             $select = "checklist = ? AND userid = 0 AND
                           ((moduleid IS NOT NULL AND moduleid > 0) OR (linkcourseid IS NOT NULL AND linkcourseid > 0))";
-            $autoitems = $DB->get_records_select('checklist_item', $select, [$this->checklist->id]);
+            $autoitems = $DB->get_records_select('elediachecklist_item', $select, [$this->checklist->id]);
             foreach ($autoitems as $autoitem) {
                 if ($autoitem->moduleid) {
                     $disableitems[] = $autoitem->id;
@@ -3961,8 +3992,7 @@ class checklist_class {
         $groupingsql = self::get_grouping_sql($userid, $checklist->course);
         $select = "checklist = ? AND userid = 0 AND itemoptional = ".CHECKLIST_OPTIONAL_NO."
                       AND hidden = ".CHECKLIST_HIDDEN_NO." AND $groupingsql";
-        $items = $DB->get_records_select('checklist_item', $select, array($checklist->id),
-                                         '', 'id');
+        $items = $DB->get_records_select('elediachecklist_item', $select, array($checklist->id), '', 'id');
         if (empty($items)) {
             return array(false, false);
         }
@@ -3976,7 +4006,7 @@ class checklist_class {
         } else {
             $sql .= 'teachermark = '.CHECKLIST_TEACHERMARK_YES;
         }
-        $ticked = $DB->count_records_select('checklist_check', $sql, $params);
+        $ticked = $DB->count_records_select('elediachecklist_check', $sql, $params);
 
         return array($ticked, $total);
     }
@@ -4022,7 +4052,7 @@ class checklist_class {
         }
         if ($strictness == MUST_EXIST) {
             // OK - not actually failed to get the record, but if we've not found it then it is missing in the DB.
-            throw new dml_missing_record_exception('checklist_item', 'displayname = ?', array($itemname));
+            throw new dml_missing_record_exception('elediachecklist_item', 'displayname = ?', array($itemname));
         }
         return null;
     }
