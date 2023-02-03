@@ -313,7 +313,8 @@ if (isset($_REQUEST['commentsEA']) ) {
     $pdf->SetX(10);
     $inp = iconv('UTF-8', 'windows-1252', 'Klausurdatum:') . ': ';
     if (isset($myrow[2]) && $myrow[2] != 0) {
-        $inp .= date('d.m.Y', strtotime($klausurrow[0] . ' day', strtotime($examdate)));
+        //$inp .= date('d.m.Y', strtotime($klausurrow[0] . ' day', strtotime($examdate)));
+        $inp .= date('d.m.Y', $myrow[2]);
     }
     $pdf->Cell(0, 10, $inp, 0, 0, 'L');
     $pdf->Ln(5);

@@ -52,4 +52,14 @@ if ($ADMIN->fulltree) {
     $choices = $all;
     $settings->add(new admin_setting_configmultiselect($name, $visiblename, $description, $defaultsetting, $choices));
 
+    $name = 'elediachecklist/data_instance_id_problems';
+    $visiblename = get_string('data_instance_id_problems_title', 'elediachecklist');
+    $description = get_string('data_instance_id_problems_description', 'elediachecklist');
+    $settings->add(new admin_setting_configtext($name, $visiblename, $description, '', PARAM_INT, 16));
+
+    $name = 'elediachecklist/data_field_id_default';
+    $visiblename = get_string('data_field_id_default_title', 'elediachecklist');
+    $description = get_string('data_field_id_default_description', 'elediachecklist');
+    $settings->add(new admin_setting_configtext($name, $visiblename, $description, '', PARAM_INT, 16));
+
 }

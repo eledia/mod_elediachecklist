@@ -13,23 +13,19 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+// This activity has not particular settings but the inherited from the generic
+// backup_activity_task so here there isn't any class definition, like the ones
+// existing in /backup/moodle2/backup_settingslib.php (activities section).
+
 /**
- * Version information
- *
+ * Backup settings.
  * @copyright Davo Smith <moodle@davosmith.co.uk>
- * @package mod_elediachecklist
+ * @package mod_checklist
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
-global $CFG;
 
-//$plugin->version = 2022111100; // davor!!
-$plugin->version = 2023020300;  // The current module version (Date: YYYYMMDDXX).
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '3.9.0.4';
-$plugin->requires = 2020061500; // Moodle 3.9.0.
-$plugin->component = 'mod_elediachecklist';
-$plugin->dependencies = $plugin->dependencies = array(
-    'block_eledia_adminexamdates' => ANY_VERSION
-);
+
+global $CFG; // To keep codechecker happy - otherwise it will complain about MOODLE_INTERNAL being present OR being absent.

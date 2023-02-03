@@ -66,7 +66,7 @@ wir möchten Sie daran erinnern, dass Sie uns für Ihre E-Klausur am {Datum}, {B
 Mit besten Grüßen<br/>
 Ihr E-Klausurteam';
 
-$string['databaselink'] = '../data/edit.php?d=5';
+$string['databaselink'] = '../data/edit.php?d=1';
 $string['checklist_id'] = '82';
 
 $string['addcomments'] = 'Add comments';
@@ -436,4 +436,12 @@ $string['erinnerung_knb_beschreibung'] = 'Wählen Sie die Punkte aus der Terminc
 .'die in der E-Mail aufgeführt werden sollen.';
 
 $string['kein_scl_verantwortlicher_genannt'] = 'Es ist kein SCL-Verantwortlicher genannt. Es wurde keine E-Mail versendet.';
+
+
+$string['data_instance_id_problems_title'] = 'Link zur Problemdatenbank';
+$string['data_instance_id_problems_description'] = 'Die Problemdatenbank-Instanz-ID';
+
+$string['data_field_id_default_title'] = 'Problemdatenbank, Klausurbezeichnung';
+$string['data_field_id_default_description'] = 'Welches Problemdatenbank-Feld soll beim Hinzufügen eines Problems mit der '
+        .'Klausurbezeichnung vorbelegt sein?';
 

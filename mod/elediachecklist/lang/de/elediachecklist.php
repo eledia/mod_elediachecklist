@@ -154,3 +154,11 @@ $string['erinnerung_klausurnachbereitung_beschreibung'] = 'Wählen Sie die Punkt
 
 $string['kein_scl_verantwortlicher_genannt'] = 'Es ist kein SCL-Verantwortlicher genannt. Es wurde keine E-Mail versendet.';
 
+
+$string['data_instance_id_problems_title'] = 'Link zur Problemdatenbank';
+$string['data_instance_id_problems_description'] = 'Die Problemdatenbank-Instanz-ID';
+
+$string['data_field_id_default_title'] = 'Problemdatenbank, Klausurbezeichnung';
+$string['data_field_id_default_description'] = 'Welches Problemdatenbank-Feld soll beim Hinzufügen eines Problems mit der '
+.'Klausurbezeichnung vorbelegt sein?';
+

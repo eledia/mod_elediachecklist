@@ -429,8 +429,18 @@ class checklist_class {
         $sql .= "eledia.examiner, eledia.contactperson, eledia.responsibleperson, eledia.confirmed ";
         $sql .= "FROM {eledia_adminexamdates} AS eledia ";
 
+        // JSON-String ist ggf. zu gross, da alle Examen ausgegeben werden (1000 und mehr)
+        // Es werden aber nur die Daten EINES Examens benoetigt(?)
+        // Eine vorherige Version hat wohl mal alle benoetigt (wg. Selectbox-Wert-Wechsel)
+        // Test & Hack, 2023-01-19
+        // Ggf. den Parameter $examid im Konstruktor mituebergeben
+        if(isset($_GET['examid'])  &&  is_numeric($_GET['examid'])) {
+            $sql .= "WHERE eledia.id = ".((int)$_GET['examid']);
+        }
+
         $exams = $DB->get_records_sql($sql);
-        //echo '<pre>'.print_r($exams, true).'</pre>';
+        //echo '<br><br><br><br>';
+        //echo '<pre> x - '.print_r($exams, true).'</pre>';
 
         $departmentchoices = unserialize(get_config('block_eledia_adminexamdates', 'departmentchoices'));
         //echo '<pre>'.print_r($departmentchoices, true).'</pre>';
@@ -1545,13 +1555,77 @@ class checklist_class {
         $this->view_tabs($currenttab);
         $page = optional_param('page', 0, PARAM_INT);
 
-        $href = get_string('databaselink', 'elediachecklist');
-        if(trim($href) != '') {
+        //
+        // Link to problem database.
+        //
+
+        //echo '<br /><br /><br />';
+        //$val = get_config('elediachecklist');
+        //echo '<pre>'.print_r($val, true).'</pre>';
+        //$val = get_config('elediachecklist', 'data_instance_id_problems');
+        //echo 'data_instance_id_problems = '.$val.'<br />';
+        //$val = get_config('elediachecklist', 'data_field_id_default');
+        //echo 'data_field_id_default = '.$val.'<br />';
+        //$val = get_string('databaselink', 'elediachecklist');
+        //echo 'databaselink = '.$val.'<br />';
+
+        unset($href);
+        $params = array();
+        // new method //.
+        $datainstanceidproblems = get_config('elediachecklist', 'data_instance_id_problems');
+        if(trim($datainstanceidproblems) != '') {
+            $params = array('d' => $datainstanceidproblems);
+            $moodleurl = new moodle_url('../data/edit.php', $params);
+            $href = $moodleurl->out(true);
+            $case = 1;
+        }
+        // old method //.
+        if(!isset($href)) {
+            $val = get_string('databaselink', 'elediachecklist');
+            if(trim($val) != '') {
+                $moodleurl = new moodle_url($val);
+                $params = $moodleurl->params();
+                $href = $moodleurl->out(true);
+                $case = 2;
+            }
+        }
+        //echo 'href = '.$href.' // case = '.$case.'<br />';
+
+        // Add exam description //.
+        if(isset($href)) {
+            $datafieldiddefault = get_config('elediachecklist', 'data_field_id_default');
+            if(trim($datafieldiddefault) != '') {
+                $key = 'field_'.trim($datafieldiddefault).'_default';
+                $val = '';
+                // Hack //.
+                if(isset($_GET['examid'])  &&  is_numeric($_GET['examid'])) {
+                    $id = (int)$_GET['examid'];
+                    $obj = $DB->get_record('eledia_adminexamdates', array('id' => $id));
+                    if(isset($obj->examname)) {
+                        $val = urlencode(trim($obj->examname));
+                    }
+                }
+                $params[$key] = $val;
+                $moodleurl = new moodle_url('../data/edit.php', $params);
+                $href = $moodleurl->out(true);
+                //echo '<pre>'.print_r($params, true).'</pre>';
+                //echo 'href - exam description = '.$href.'<br />';
+            }
+        }
+
+        if(isset($href)) {
             echo "<br /><div style='width: 100%; text-align: center'><a href='" . $href . "'>📚 Datenbank für Problemfälle</a></div>";
         }
         else {
-            echo '<br /><div style="width: 100%; text-align: center">Angabe der Datenbank-Instanz nicht vorhanden ("databaselink").</div>';
+            echo '<br />
+            <div style="width: 100%; text-align: center">
+                Angabe der Datenbank-Instanz nicht vorhanden ("databaselink" oder "data_instance_id_problems").
+            </div>';
         }
+
+        //
+        //
+        //
 
         $params = array(
             'contextid' => $this->context->id,
@@ -1616,6 +1690,7 @@ class checklist_class {
      * View the report on user's checkmarks.
      */
     public function report() {
+
         global $OUTPUT;
 
         if ((!$this->items) && $this->canedit()) {
@@ -1643,9 +1718,9 @@ class checklist_class {
 
         print $this->globalLayout;
 
-        $this->view_tabs_fortschritt('report');
+        //$this->view_tabs_fortschritt('report');
 
-        $this->process_report_actions();
+        //$this->process_report_actions();
 
         $params = array(
             'contextid' => $this->context->id,
@@ -1657,11 +1732,11 @@ class checklist_class {
         $event = \mod_elediachecklist\event\report_viewed::create($params);
         //$event->trigger();
 
-        if ($this->userid) {
-            $this->view_items(true);
-        } else {
-            $this->view_report();
-        }
+        //if ($this->userid) {
+        //    $this->view_items(true);
+        //} else {
+        //    $this->view_report();
+        //}
 
         $this->view_footer();
     }
@@ -4170,4 +4245,358 @@ function txt_of_id($elediachecklist_item_id) {
     }
 
     return $txt;
+}
+
+/**
+ *
+ */
+function elediachecklist_get_weekday_number($time) {
+
+    // https://www.php.net/manual/de/datetime.construct.php //.
+    // https://www.php.net/manual/de/datetime.format.php    //.
+    // 'N' -> 1 = Mo, 7 = So
+    $weekofday = date('N', $time);
+
+    return $weekofday;
+
+    // https://www.php.net/manual/de/datetime.formats.date.php //.
+    // Tag der Woche als Ausgabeformat nicht zu finden         //.
+    // 2023-01-27                                              //.
+    //$obj = new DateTime($datetime);
+    //$daynumber = $obj->format();
+}
+
+/**
+ *
+ */
+function elediachecklist_get_weekday_name($time) {
+
+    $weekofday = elediachecklist_get_weekday_number($time);
+
+    $days = array(
+        1 => 'Mo',
+        2 => 'Di',
+        3 => 'Mi',
+        4 => 'Do',
+        5 => 'Fr',
+        6 => 'Sa',
+        7 => 'So',
+    );
+
+    $name = '';
+    if(isset($days[$weekofday])) {
+        $name = $days[$weekofday];
+    }
+
+    return $name;
+}
+
+/**
+ * Verify $date
+ * @param string $date (format d.m.Y)
+ * @return bool
+ */
+function elediachecklist_is_date($date) {
+
+    //echo 'date = '.$date.'<br />'."\n";
+
+    if(strlen($date) != 10) {
+        return false;
+    }
+    $arr = explode('.', $date);
+    if(count($arr) != 3) {
+        return false;
+    }
+
+    $year = (int)substr($date, -4);
+    $month = (int)substr($date, 3, 2);
+    $day = (int)substr($date, 0, 2);
+
+    $bool = checkdate($month, $day, $year);
+    return $bool;
+}
+
+/**
+ * @param string $date (format d.m.Y)
+ * @param string $mode ('all', 'holidays', 'weekends')
+ * @return mixed FALSE or assoc. array about the holiday
+ */
+function elediachecklist_is_holiday($date, $mode='all') {
+
+    //echo 'date = '.$date.'<br />'."\n";
+
+    // Parameter check
+    if(elediachecklist_is_date($date) === false) {
+        return false;
+    }
+
+    // Static.
+    static $static = array();
+    $md5 = md5($date.'-'.$mode);
+    if(isset($static[$md5])) {
+        return $static[$md5];
+    }
+
+    $year = (int)substr($date, -4);
+    $month = (int)substr($date, 3, 2);
+    $day = (int)substr($date, 0, 2);
+    // Highnoon.
+    $tp = mktime(12, 0, 0, $month, $day, $year);
+
+    $holidays = elediachecklist_get_holidays($mode, $year, $year);
+
+    $ret = false;
+    foreach($holidays as $holiday) {
+        if($holiday['tpfrom'] < $tp  &&  $tp < $holiday['tpto']) {
+            //$ret = true;
+            $ret = $holiday;
+            break;
+        }
+    }
+
+    //echo 'ret = '.$ret.' / year = '.$year.' / month = '.$month.' / day = '.$day.'<br />'."\n";
+
+    return $ret;
+}
+
+/**
+ * @param string $mode ('all', 'holidays', 'weekends')
+ * @param null|int $fromyear
+ * @param null|int $toyear
+ * @return array 2-dim Array
+ */
+function elediachecklist_get_holidays($mode='all', $fromyear=null, $toyear=null) {
+
+    // Parameter check.
+    $awd = array('all', 'holidays', 'weekends');
+    if(!in_array($mode, $awd)) {
+        $mode = 'all';
+    }
+    //echo 'mode = '.$mode.'<br />'."\n";
+    if(!isset($fromyear)) {
+        $fromyear = (int)date('Y') - 1;
+    }
+    if(!isset($toyear)) {
+        $toyear = $fromyear + 2;
+    }
+    if($fromyear > $toyear) {
+        $buf = $fromyear;
+        $fromyear = $toyear;
+        $toyear = $buf;
+    }
+    //echo 'fromyear = '.$fromyear.' / toyear = '.$toyear.'<br />'."\n";
+
+    // Return value, start.
+    $ret = array();
+
+    // Static.
+    static $static = array();
+    $md5 = md5($mode.'-'.$fromyear.'-'.$toyear);
+    if(isset($static[$md5])) {
+        return $static[$md5];
+    }
+
+    //
+    // Holidays.
+    //
+
+    if($mode == 'all'  ||  $mode == 'holidays') {
+
+        $holidays = get_config('block_eledia_adminexamdates', 'holidays');
+        if (trim($holidays) == '') {
+            // https://kassel.elearning-home.de/admin/settings.php?section=blocksettingeledia_adminexamdates //.
+            // 2023-01-31 //.
+            $str = '';
+            $str .= '01.01.2022|Neujahr' . "\n";
+            $str .= '15.04.2022|Karfreitag' . "\n";
+            $str .= '18.04.2022|Ostermontag' . "\n";
+            $str .= '01.05.2022|Tag der Arbeit' . "\n";
+            $str .= '26.05.2022|Christi Himmelfahrt' . "\n";
+            $str .= '06.06.2022|Pfingstmontag' . "\n";
+            $str .= '16.06.2022|Fronleichnam' . "\n";
+            $str .= '03.10.2022|Tag der Deutschen Einheit' . "\n";
+            $str .= '25.12.2022|Weihnachten' . "\n";
+            $str .= '26.12.2022|Weihnachten' . "\n";
+            $str .= '01.01.2023|Neujahr' . "\n";
+            $str .= '07.04.2023|Karfreitag' . "\n";
+            $str .= '10.04.2023|Ostermontag' . "\n";
+            $str .= '01.05.2023|Tag der Arbeit' . "\n";
+            $str .= '18.05.2023|Christi Himmelfahrt' . "\n";
+            $str .= '29.05.2023|Pfingstmontag' . "\n";
+            $str .= '08.06.2023|Fronleichnam' . "\n";
+            $str .= '03.10.2023|Tag der Deutschen Einheit' . "\n";
+            $str .= '25.12.2023|Weihnachten' . "\n";
+            $str .= '26.12.2023|Weihnachten' . "\n";
+            $holidays = $str;
+        }
+
+        $holidays = str_replace("\r\n", "\n", $holidays);
+        $holidays = str_replace("\r", "\n", $holidays);
+
+        //echo '<pre>holidays - '.print_r($holidays, true).'</pre>';
+
+        $arr = preg_split("|\n|", $holidays);
+        //echo '<pre>'.print_r($arr, true).'</pre>';
+
+        foreach ($arr as $one) {
+
+            $items = explode('|', $one);
+
+            // Continue ...
+            if (trim($one) == '') {
+                continue;
+            } else if (count($items) == 0) {
+                continue;
+            }
+
+            $date = $items[0];
+
+            // Continue ...
+            if(elediachecklist_is_date($date) === false) {
+                continue;
+            }
+
+            $pos = strpos($one, '|');
+            $name = substr($one, $pos + 1);
+
+            $year = (int)substr($date, -4);
+            $month = (int)substr($date, 3, 2);
+            $day = (int)substr($date, 0, 2);
+            //echo 'year = '.$year.' / month = '.$month.' / day = '.$day.'<br />';
+            $tpfrom = mktime(0, 0, 1, $month, $day, $year);
+            $tpto = mktime(23, 59, 59, $month, $day, $year);
+
+            // Continue ...
+            if($year < $fromyear  ||  $year > $toyear) {
+                continue;
+            }
+
+            $dayofweek = elediachecklist_get_weekday_name($tpfrom);
+
+            // Later sort by $tpfrom, see below.
+            $retone = array(
+                'date'      => $date,
+                'name'      => $name,
+                'dayofweek' => $dayofweek,
+                'tpfrom'    => $tpfrom,
+                'tpmid'     => ((int)(($tpfrom+$tpto)/2)),
+                'tpto'      => $tpto,
+            );
+            $tpinp = $tpfrom;
+            while(isset($ret[$tpinp])) {
+                $tpinp = $tpinp + 1;
+            }
+            $ret[$tpinp] = $retone;
+        }
+    }
+
+    //
+    // Weekend.
+    //
+
+    if($mode == 'all'  ||  $mode == 'weekends') {
+
+        // At 2 o'clock
+        $tpfrom = mktime(2, 0, 0, 1, 1, $fromyear);
+        $actyear = $fromyear;
+        while($actyear <= $toyear) {
+
+            //$dayofweek = elediachecklist_get_weekday_name($tpfrom);
+            // 'N' -> 6 = Sa, 7 = So //.
+            $dayofweek = (int)date('N', $tpfrom);
+            //echo 'dayofweek = '.$dayofweek.'<br />'."\n";
+            if($dayofweek == 6  ||  $dayofweek == 7) {
+                //echo 'INSIDE - '.$dayofweek.'<br />'."\n";
+                // Later sort by $tpfrom, see below.
+                $tpto = ($tpfrom + (60 * 60 * 24));
+                $retone = array(
+                    'date'      => date('d.m.Y', $tpfrom),
+                    'name'      => 'Wochenende, '.elediachecklist_get_weekday_name($tpfrom),
+                    'dayofweek' => elediachecklist_get_weekday_name($tpfrom),
+                    'tpfrom'    => $tpfrom,
+                    'tpmid'     => ((int)(($tpfrom+$tpto)/2)),
+                    'tpto'      => $tpto
+                );
+                //echo '<pre>'.print_r($retone, true).'</pre>>'."\n";
+                $tpinp = $tpfrom;
+                while(isset($ret[$tpinp])) {
+                    $tpinp = $tpinp + 1;
+                }
+                $ret[$tpinp] = $retone;
+
+
+            }
+            // Add a day.
+            $tpfrom = $tpfrom + (60 * 60 * 24);
+            $actyear = (int)date('Y', $tpfrom);
+            //$actyear++;
+        }
+    }
+
+    // Sort by keys.
+    ksort($ret);
+    // Only Values
+    $ret = array_values($ret);
+
+    // Static. See above.
+    $static[$md5] = $ret;
+
+    //echo '<pre>ret - ' . print_r($ret, true) . '</pre>';
+
+    return $ret;
+}
+
+/**
+ * Get next worday after holiday!
+ * @param string $date (format: d.m.Y)
+ * @param string $mode ('all', 'holidays', 'weekends')
+ * @return string (format: d.m.Y)
+ */
+function elediachecklist_get_next_workday_after_holiday($date, $mode='all') {
+
+    // Parameter check.
+    if(elediachecklist_is_date($date) === false) {
+        return $date;
+    }
+    $mixed = elediachecklist_is_holiday($date, $mode);
+    if($mixed === false) {
+        return $date;
+    }
+    //echo '<pre>'.print_r($mixed, true).'</pre>';
+
+    //$fromyear = (int)substr($date, -4);
+    //$toyear = $fromyear + 1;
+
+    $tp = $mixed['tpmid'];
+    $date = date('m.d.Y', $tp);
+    $isokay = false;
+    while($isokay === false) {
+        $tp = $tp + (60 * 60 *24);
+        $date = date('d.m.Y', $tp);
+        $mixed = elediachecklist_is_holiday($date, $mode);
+        if($mixed === false) {
+            $isokay = true;
+        }
+    }
+
+    return $date;
+};
+
+/**
+ * @param string $date (format: d.m.Y)
+ * @return int
+ */
+function elediachecklist_date_to_timestamp($date) {
+
+    if(elediachecklist_is_date($date) === false) {
+        return 0;
+    }
+
+    $year = (int)substr($date, -4);
+    $month = (int)substr($date, 3, 2);
+    $day = (int)substr($date, 0, 2);
+    // High noon.
+    $tp = mktime(12, 0, 0, $month, $day, $year);
+
+    return $tp;
 }

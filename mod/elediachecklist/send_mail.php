@@ -95,24 +95,43 @@ if(count($knbselectedarray) == 0) {
 $buf = array();
 foreach($checks as $check) {
 
-    // FROM#UNIXTIME(exam.examtimestart)             -> 2022-09-02 09:12:59
-    // FROM#UNIXTIME(exam.examtimestart, '%Y-%m-%d') -> 2022-09-02
-
-    //$sql .= "DISTINCT REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, ";
+    // displaytext //.
     $tp = $check->examtimestart + (60 * 60 * 24 * $check->duetime);
     $date = date('d.m.Y', $tp);
-    $displaytext = str_replace('{Datum}', $date, $check->emailtext);
-    //$displaytext = 'displaytext';
+    // Holiday to this day? //.
+    $isholiday = false;
 
-    //$sql .= "DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, ";
+    // ERLEDIGT & AUSKOMMENTIERT
+    //$mixed = elediachecklist_is_holiday($date);
+    //if(is_array($mixed)) {
+    //    $isholiday = true;
+    //    // Next workday //.
+    //    $date = elediachecklist_get_next_workday_after_holiday($date);
+    //    //$date = $date.'_';
+    //}
+
+    $displaytext = str_replace('{Datum}', $date, $check->emailtext);
+
+    // newdate //.
     $tp = $check->examtimestart + (60 * 60 * 24 * $check->duetime);
     $newdate = date('d.m.Y', $tp);
-    //$newdate = 'newdate';
+    // Holiday to this day? //.
+    $isholiday = false;
 
-    //$sql .= "DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate, ";
+    // ERLEDIGT & AUSKOMMENTIERT
+    //$mixed = elediachecklist_is_holiday($newdate);
+    //if(is_array($mixed)) {
+    //    $isholiday = true;
+    //    // Next workday //.
+    //    $newdate = elediachecklist_get_next_workday_after_holiday($newdate);
+    //    //$newdate = $newdate.'-';
+    //}
+
+    // examDate //.
     $tp = $check->examtimestart;
     $examDate = date('d.m.Y', $tp);
-    //$examDate = 'examDate';
+    // Der Tag kommt aus der Tabelle 'eledia_adminexamdates' //.
+    // Hier keine Ueberpruefung auf 'Holiday'                //.
 
     $check->displaytext = $displaytext;
     $check->newdate     = $newdate;

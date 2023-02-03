@@ -10,6 +10,8 @@ require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
 require_once($CFG->dirroot.'/mod/elediachecklist/lib.php');
 
+// Button: Sende Checkliste //.
+
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or.
 $checklistid = optional_param('eledia', 0, PARAM_INT);  // Checklist instance ID.
 $examid = optional_param('examid', 0, PARAM_INT);
@@ -21,34 +23,11 @@ class PDF extends TCPDF {
 
     function Header()
     {
-        //----- ALT
-        /*
-        $this->SetFont('Arial','B',11);
-        // Move to the right
-        $this->Cell(80);
-        // Title
-        $type = optional_param('type', '', PARAM_TEXT);
-        $this->Cell(80, 10, iconv('UTF-8', 'windows-1252', 'Termincheckliste'), 1, 0, 'C');
-        // Line break
-        $this->Ln(20);
-        */
-        //----- NEU
-        // Kein Header
     }
 
 
     function Footer()
     {
-        //----- ALT
-        /*
-        // Position at 1.5 cm from bottom
-        $this->SetY(-15);
-        // Arial italic 8
-        $this->SetFont('Arial','I',8);
-        // Page number
-        $this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');
-        */
-        //----- NEU
         // Position at 15 mm from bottom
         $this->SetY(-15);
         // Set font
@@ -134,13 +113,13 @@ $examTopics = $DB->get_records_sql($sql);
 
 // Startwerte
 $properties = array(
-        'examiner'       => '',      // Dozent
-        'examiners'      => array(), // Dozenten
-        'examname'       => '',      // Bezeichnung Klausur
-        'examtimestart'  => '',      // Klausurtermin (d.m.Y)
-        'numberstudents' => '',      // Erwartete Anzahl Prueflinge
-        'scl_name'       => '',      // Name SCL Betreuer
-        'duration'       => '',      // Zeitraum der Raumbuchung
+        'examiner'       => '',      // Dozent                      //.
+        'examiners'      => array(), // Dozenten                    //.
+        'examname'       => '',      // Bezeichnung Klausur         //.
+        'examtimestart'  => '',      // Klausurtermin (d.m.Y)       //.
+        'numberstudents' => '',      // Erwartete Anzahl Prueflinge //.
+        'scl_name'       => '',      // Name SCL Betreuer           //.
+        'duration'       => '',      // Zeitraum der Raumbuchung    //.
 );
 
 $checkedTopics = $DB->get_records("elediachecklist_check", ['teacherid' => $examid]);
@@ -158,7 +137,7 @@ foreach($result as $one) {
 
     $examiners = array();
     $examiner = '';
-    // Dozenten
+    // Dozenten //.
     if(!is_numeric($one->examiner)) {
         $sql = "SELECT id, firstname, lastname FROM {user} WHERE id IN (".$one->examiner.")";
         $res = $DB->get_records_sql($sql);
@@ -169,7 +148,7 @@ foreach($result as $one) {
             $examiner = $examiners[0];
         }
     }
-    // Dozent
+    // Dozent //.
     else {
         $sql = "SELECT id, firstname, lastname FROM {user} WHERE id = " . $one->examiner;
         $res = $DB->get_records_sql($sql);
@@ -180,7 +159,7 @@ foreach($result as $one) {
         }
     }
 
-    // SCL-Verantwortlicher
+    // SCL-Verantwortlicher //.
     $sclname = '';
     $sql = "SELECT id, firstname, lastname FROM {user} WHERE id = ".$one->responsibleperson;
     $res = $DB->get_records_sql($sql);
@@ -207,55 +186,6 @@ if(!isset($properties['scl_name'])  ||  trim($properties['scl_name']) == '') {
 
 // PDF //.
 
-//----- ALT
-/*
-$pdf = new PDF('L');
-
-//header
-$pdf->AddPage();
-//foter page
-$pdf->AliasNbPages();
-$pdf->SetFont('Arial','B',11);
-
-//Column headers
-$pdf->Ln();
-$pdf->Cell(10, 12, iconv('UTF-8', 'windows-1252', ""), 1, 0, 'C', false, '', 2);
-$pdf->Cell(220, 12, iconv('UTF-8', 'windows-1252', "Bezeichnung"), 1, 0, '', false, '', 2);
-$pdf->Cell(40, 12, iconv('UTF-8', 'windows-1252',  "Datum"), 1, 0, 'C', false, '', 2);
-
-$pdf->SetFont('Arial','',10);
-
-foreach ($examTopics as &$topic) {
-
-    $pdf->Ln();
-
-    $topicDate = date('r', $examStart);
-    $r = strtotime($examStart );
-    $s =  strtotime('-1 day', strtotime($examStart ));
-    $f= date('d.m.Y', strtotime('-1 day', strtotime($examStart )));
-
-    $isChecked = "-";
-    foreach ($checkedTopics as &$checked) {
-        if ($checked->item == $topic->id)
-            $isChecked = "X";
-    }
-
-    $pdf->Cell(10, 12, iconv('UTF-8', 'windows-1252', $isChecked), 1, 0, 'C', false, '', 2);
-    $pdf->Cell(220, 12, iconv('UTF-8', 'windows-1252', $topic->displaytext), 1, 0, '', false, '', 2);
-    //$pdf->Cell(60, 12, iconv('UTF-8', 'windows-1252', $topic->duetime), 1, 0, 'C', false, '', 2);
-
-    if ($topic->displaytext == "Endabnahme") {
-        $eaDate = $DB->get_record("elediachecklist_item_date", ['examid' => $examid]);
-        $pdf->Cell(40, 12, iconv('UTF-8', 'windows-1252', date("d.m.Y", strtotime($eaDate->checkdate))), 1, 0, 'C', false, '', 2);
-    } else {
-        $pdf->Cell(40, 12, iconv('UTF-8', 'windows-1252', date('d.m.Y', strtotime($topic->duetime . ' day', strtotime($topicDate)))), 1, 0, 'C', false, '', 2);
-    }
-}
-
-$pdfName = 'Termincheckliste_' . date("Ymd") . '.pdf';
-$pdf->Output($CFG->dataroot . "/" . $pdfName, 'F');
-*/
-//----- NEU
 $pdf = new PDF('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
 // set margins
@@ -355,11 +285,37 @@ foreach ($examTopics as &$topic) {
         if ($topic->displaytext == "Endabnahme") {
             $eaDate = $DB->get_record("elediachecklist_item_date", ['examid' => $examid]);
             if (isset($eaDate->checkdate)) {
-                $third = date("d.m.Y", $eaDate->checkdate);
+                $date = date("d.m.Y", $eaDate->checkdate);
+                // Holiday to this day? //.
+                $isholiday = false;
+
+                // ERLEDIGT & AUSKOMMENTIERT
+                //$mixed = elediachecklist_is_holiday($date);
+                //if(is_array($mixed)) {
+                //    $isholiday = true;
+                //    // Next workday //.
+                //    $date = elediachecklist_get_next_workday_after_holiday($date);
+                //    $date = '<i>'.$date.'</i>';
+                //}
+
+                $third = $date;
             }
         } else {
             if (isset($topic->duetime)) {
-                $third = date('d.m.Y', strtotime($topic->duetime . ' day', strtotime($topicDate)));
+                $date = date('d.m.Y', strtotime($topic->duetime . ' day', strtotime($topicDate)));
+                // Holiday to this day? //.
+                $isholiday = false;
+
+                // ERLEDIGT & AUSKOMMENTIERT
+                //$mixed = elediachecklist_is_holiday($date);
+                //if(is_array($mixed)) {
+                //    $isholiday = true;
+                //    // Next workday //.
+                //    $date = elediachecklist_get_next_workday_after_holiday($date);
+                //    $date = '<i>'.$date.'</i>';
+                //}
+
+                $third = $date;
             }
         }
     }
@@ -384,12 +340,9 @@ $pdf->Output($CFG->dataroot . "/" . $pdfName, 'F');
 
 $sql  = "SELECT ";
 $sql .= "myitem.id, ";
-//$sql .= "DISTINCT REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, ";
 $sql .= "myitem.emailtext, ";
 $sql .= "myitem.duetime, ";
-//$sql .= "DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, ";
 $sql .= "exam.examtimestart, ";
-//$sql .= "DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate, ";
 $sql .= "exam.examname ";
 $sql .= "FROM {elediachecklist_item} AS myitem ";
 $sql .= "INNER JOIN {eledia_adminexamdates} exam ON exam.id = ? ";
@@ -404,24 +357,43 @@ $checks = $DB->get_records_sql($sql, ['examid' => $examid, 'examid_' => $examid]
 $buf = array();
 foreach($checks as $check) {
 
-    // FROM#UNIXTIME(exam.examtimestart)             -> 2022-09-02 09:12:59
-    // FROM#UNIXTIME(exam.examtimestart, '%Y-%m-%d') -> 2022-09-02
-
-    //$sql .= "DISTINCT REPLACE(myitem.emailtext, '{Datum}', DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y'))  as displaytext, ";
+    // displaytext //.
     $tp = $check->examtimestart + (60 * 60 * 24 * $check->duetime);
     $date = date('d.m.Y', $tp);
-    $displaytext = str_replace('{Datum}', $date, $check->emailtext);
-    //$displaytext = 'displaytext';
+    // Holiday to this day? //.
+    $isholiday = false;
 
-    //$sql .= "DATE_FORMAT(DATE_ADD(DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%Y-%m-%d'), INTERVAL myitem.duetime DAY), '%d.%m.%Y') AS newdate, ";
+    // ERLEDIGT & AUSKOMMENTIERT
+    //$mixed = elediachecklist_is_holiday($date);
+    //if(is_array($mixed)) {
+    //    $isholiday = true;
+    //    // Next workday //.
+    //    $date = elediachecklist_get_next_workday_after_holiday($date);
+    //    //$date = $date.'_';
+    //}
+
+    $displaytext = str_replace('{Datum}', $date, $check->emailtext);
+
+    // newdate //.
     $tp = $check->examtimestart + (60 * 60 * 24 * $check->duetime);
     $newdate = date('d.m.Y', $tp);
-    //$newdate = 'newdate';
+    // Holiday to this day? //.
+    $isholiday = false;
 
-    //$sql .= "DATE_FORMAT(FROM#UNIXTIME(exam.examtimestart),'%d.%m.%Y') AS examDate, ";
+    // ERLEDIGT & AUSKOMMENTIERT
+    //$mixed = elediachecklist_is_holiday($newdate);
+    //if(is_array($mixed)) {
+    //    $isholiday = true;
+    //    // Next workday //.
+    //    $newdate = elediachecklist_get_next_workday_after_holiday($newdate);
+    //    //$newdate = $newdate.'-';
+    //}
+
+    // examDate //.
     $tp = $check->examtimestart;
     $examDate = date('d.m.Y', $tp);
-    //$examDate = 'examDate';
+    // Der Tag kommt aus der Tabelle 'eledia_adminexamdates' //.
+    // Hier keine Ueberpruefung auf 'Holiday'                //.
 
     $check->displaytext = $displaytext;
     $check->newdate     = $newdate;

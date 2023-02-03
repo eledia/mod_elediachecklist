@@ -36,6 +36,7 @@ function xmldb_elediachecklist_install() {
         die('You must upgrade to Moodle 3.5.3 (or above) before installing this version of mod_elediachecklist');
     }
 
+    // Tab: Qualitaetsmanagement //.
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (2, 'Checkpunkte bei der Qualitätssicherung', 0, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (3, 'Kurs: Klausurbezeichnung gemäß Nomenklatur anpassen, Ersteller*innenrechte -> Prüfer*in/Bewerter*in', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (4, 'Testeinstellungen: Zeitbegrenzung, automatische Abgabe aktiviert, Überprüfungsoptionen deaktiviert', 1, 'qm')", null);
@@ -72,21 +73,25 @@ function xmldb_elediachecklist_install() {
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (35, 'Excel-Export und Archive für Prüfer bereitstellen und diese informieren', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (36, 'Klausurkurs und Klausur unsichtbar machen und in Bereich Prüfungsumgebung verschieben', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (37, 'Kurssicherung erstellen', 1, 'qm')", null);
+
+    // Tab: Endabnahme //.
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (38, 'Während der Testklausur mit Dummy', 0, 'ea')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (39, 'Name, Vorname und Matrikelnummer erscheinen im Bildschirmkopf', 1, 'ea')", null);
-    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (40, 'Die Templates sind korrekt zugeordnet (Schalter, Darstellung).', 1, 'ea')", null);
+    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (40, 'Im SEB funktionieren Pop-Ups (PDF, Bild, Video) und Anwendungen (Taschenrechner usw.).', 1, 'ea')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (41, 'Restzeitangabe funktioniert.', 1, 'ea')", null);
-    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (42, 'Bei Abgabe der Klausur: Bestätigungsmeldung erscheint.', 1, 'ea')", null);
-    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (43, 'Die Klausur wurde während der Endabnahme mit prüfungsnahen Eingaben und Prozeduren getestet.  L-1', 1, 'ea')", null);
+    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (42, 'Die Klausur wurde während der Endabnahme mit prüfungsnahen Eingaben und Prozeduren getestet.', 1, 'ea')", null);
+    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (43, 'Bei Zufallsauswahl der Fragen wurden alle Fragen in einer eigenständigen Testklausur erprobt.', 1, 'ea')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (44, 'Nach der Testklausur mit Dummy', 0, 'ea')", null);
-    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (45, 'Es wurde ein für die Klausureinsicht vollständiges Archiv erstellt.', 1, 'ea')", null);
-    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (46, 'Sämtliche Daten sind im Ergebnis-Editor sichtbar', 1, 'ea')", null);
-    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (47, 'Sämtliche Daten sind im Teilnehmerreport sichtbar', 1, 'ea')", null);
+    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (45, 'Bewertungen werden im Ergebnisbericht dargestellt.', 1, 'ea')", null);
+    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (46, 'Wenn erforderlich: Manuelle Bewertungen wurden getestet.', 1, 'ea')", null);
+    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (47, 'Es wurde ein für die Klausureinsicht vollständiges Archiv erstellt.', 1, 'ea')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (48, 'Bestätigungen', 0, 'ea')", null);
-    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (49, 'Sämtliche Daten sind im Excel-Export sichtbar', 1, 'ea')", null);
-    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (50, 'Information zum Verfahren bei Bewertungsänderungen und Notenschlüssel', 1, 'ea')", null);
-    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (51, 'Bei Zufallsauswahl der Fragen sind alle Fragen in einer eigenständigen Testklausur zu erproben, um mögliche Fehler in sonst nicht berücksichtigten Fragen zu erkennen.', 1, 'ea')", null);
+    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (49, 'Das Fachgebiet ist über das Verfahren bei Bewertungsänderungen (Korrektur bei Einzelpersonen, Nachbewertung von Aufgaben für die ganze Klausur) informiert.', 1, 'ea')", null);
+    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (50, 'Bestätigung: Das Fachgebiet übersendet dem E-Klausurteam den verwendeten Notenschlüssel.', 1, 'ea')", null);
+    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (51, 'Die rechtlichen Vorgaben zur Durchführung dieser E-Klausur wurden beachtet.', 1, 'ea')", null);
 
+
+    // Tab: Termincheckliste //.
     $DB->execute("INSERT INTO {elediachecklist_item} VALUES (1, 1, 0, 'Ersteller: innenzugriff vorhanden', 1, 0, 2, -60, 0, 'black', 0, 0, 0, NULL, '', 0, 'Ersteller: innenzugriff vorhanden {Datum}')", null);
     $DB->execute("INSERT INTO {elediachecklist_item} VALUES (2, 1, 0, 'Bereitstellung der Termincheckliste', 2, 0, 0, -34, 0, 'black', 0, 0, 0, NULL, '', 0, 'Bereitstellung der Termincheckliste {Datum}')", null);
     $DB->execute("INSERT INTO {elediachecklist_item} VALUES (3, 1, 0, 'Prüfungskonfiguration beschrieben', 3, 0, 0, -13, 0, 'black', 0, 0, 0, NULL, '', 0, 'Prüfungskonfiguration beschrieben {Datum}')", null);

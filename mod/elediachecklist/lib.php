@@ -77,23 +77,117 @@ require_once($CFG->libdir.'/completionlib.php');
  * @return int The id of the newly inserted checklist record
  */
 function elediachecklist_add_instance($checklist) {
+
+    /* @var pgsql_native_moodle_database $DB */
+
     global $DB;
 
-    //$str = __FUNCTION__;
-    //norbertLog($str);
-    //$str = 'id = '.$id;
-    //norbertLog($str);
+    //$str = '<pre>'.print_r($checklist, true).'</pre>';
+    //echo $str;
     //die();
 
-    // SCHUTZ !!! BIS RICHTIGE LOESUNG DA IST!!
-    // ng ???
-//    if($checklist->id == 1) {
-//        return 1;
-//    }
+    // Allow only one instance with ID 1. //.
+    // Is there already one?              //.
+    $elediachecklist = $DB->get_record('elediachecklist', ['id' => 1]);
+    if($elediachecklist) {
+        $msg  = "Die Aktivität 'eLeDia Checklist' kann nur einmal angelegt werden. "."\n";
+        $msg .= "Es ist nur eine Instanz von 'eLeDia Checklist' mit der ID = 1 im System zulässig.";
+        // Attention: Maybe this entry is marked as 'deleted' //.
+        // and not yet physically really deleted.             //.
+        $conditions = array(
+            'course'             => $checklist->course,
+            'module'             => $checklist->module,
+            'instance'           => 1,
+            'deletioninprogress' => 1
+        );
+        $deleted = $DB->get_record('course_modules', $conditions);
+        if($deleted) {
+            $msg  = "Die Aktivität 'eLeDia Checklist' kann nur einmal angelegt werden. "."\n";
+            $msg .= "Es ist nur eine Instanz von 'eLeDia Checklist' mit der ID = 1 im System zulässig. "."\n";
+            $msg .= "Diese befindet sich gerade im Löschprozess. "."\n";
+            $msg .= "Warten Sie den Cron-Job ab und legen Sie hier die Aktivität erneut an.";
+        }
+        mtrace($msg);
+        // ??? //.
+        return;
+    }
 
+    //------------------------------------//.
+    // TABLE: elediachecklist             //.
+    //------------------------------------//.
+    // id                    - int        //.
+    // course                - int        //.
+    // name                  - text       //.
+    // intro                 - text, null //.
+    // introformat           - int        //.
+    // timecreated           - int        //.
+    // timemodified          - int        //.
+    // useritemsallowed      - int, null  //.
+    // teacheredit           - int, null  //.
+    // theme                 - text, null //.
+    // duedatesoncalendar    - int, null  //.
+    // teachercomments       - int, null  //.
+    // maxgrade              - int        //.
+    // autopopulate          - int, null  //.
+    // autoupdate            - int, null  //.
+    // completionpercent     - int, null  //.
+    // completionpercenttype - text       //.
+    // emailoncomplete       - int, null  //.
+    // lockteachermarks      - int, null  //.
+    //------------------------------------//.
 
+    // Add/modify values.
+    $checklist->id = 1;
     $checklist->timecreated = time();
-    $checklist->id = $DB->insert_record('elediachecklist', $checklist);
+    $checklist->timemodified = 0;
+    if(!isset($checklist->theme)) {
+        $checklist->theme = 'default';
+    }
+
+    // All Parameters
+    $params = array(
+        'id'                    => $checklist->id,
+        'course'                => $checklist->course,
+        'name'                  => $checklist->name,
+        'intro'                 => $checklist->intro,
+        'introformat'           => $checklist->introformat,
+        'timecreated'           => $checklist->timecreated,
+        'timemodified'          => $checklist->timemodified,
+        'useritemsallowed'      => $checklist->useritemsallowed,
+        'teacheredit'           => $checklist->teacheredit,
+        'theme'                 => $checklist->theme,
+        'duedatesoncalendar'    => $checklist->duedatesoncalendar,
+        'teachercomments'       => $checklist->teachercomments,
+        'maxgrade'              => $checklist->maxgrade,
+        'autopopulate'          => $checklist->autopopulate,
+        'autoupdate'            => $checklist->autoupdate,
+        'completionpercent'     => $checklist->completionpercent,
+        'completionpercenttype' => $checklist->completionpercenttype,
+        'emailoncomplete'       => $checklist->emailoncomplete,
+        'lockteachermarks'      => $checklist->lockteachermarks
+    );
+
+    // Create the only instance.
+    $sql = "INSERT INTO {elediachecklist} ";
+    $sql .= "(";
+    $sql .= "id, course, name, intro, introformat, ";
+    $sql .= "timecreated, timemodified, useritemsallowed, teacheredit, ";
+    $sql .= "theme, ";
+    $sql .= "duedatesoncalendar, teachercomments, maxgrade, ";
+    $sql .= "autopopulate, autoupdate, completionpercent, ";
+    $sql .= "completionpercenttype, emailoncomplete, lockteachermarks ";
+    $sql .= ") ";
+    $sql .= "VALUES ";
+    $sql .= "(";
+    $sql .= ":id, :course, :name, :intro, :introformat, ";
+    $sql .= ":timecreated, :timemodified, :useritemsallowed, :teacheredit, ";
+    $sql .= ":theme, ";
+    $sql .= ":duedatesoncalendar, :teachercomments, :maxgrade, ";
+    $sql .= ":autopopulate, :autoupdate, :completionpercent, ";
+    $sql .= ":completionpercenttype, :emailoncomplete, :lockteachermarks ";
+    $sql .= ") ";
+
+    $DB->execute($sql, $params);
 
     elediachecklist_grade_item_update($checklist);
 
@@ -103,6 +197,11 @@ function elediachecklist_add_instance($checklist) {
     }
 
     return $checklist->id;
+
+    // Note:                                                               //.
+    // Language pack for plugin 'block_eledia_adminexamdates':             //.
+    // 'checklistlink' -> mod/elediachecklist/tabtermin.php?id=106&examid= //.
+    //                    106 = course_modules.id of this instance         //.
 }
 
 /**
@@ -114,13 +213,8 @@ function elediachecklist_add_instance($checklist) {
  * @return boolean Success/Fail
  */
 function elediachecklist_update_instance($checklist) {
-    global $DB;
 
-    //$str = __FUNCTION__;
-    //norbertLog($str);
-    //$str = 'id = '.$id;
-    //norbertLog($str);
-    //die();
+    global $DB;
 
     $checklist->timemodified = time();
     $checklist->id = $checklist->instance;
@@ -199,12 +293,6 @@ function elediachecklist_delete_instance($id) {
 
     global $DB;
 
-    //$str = __FUNCTION__;
-    //norbertLog($str);
-    //$str = 'id = '.$id;
-    //norbertLog($str);
-    //die();
-
     if (!$checklist = $DB->get_record('elediachecklist', array('id' => $id))) {
         return false;
     }
@@ -220,13 +308,15 @@ function elediachecklist_delete_instance($id) {
         }
     }
 
-    $items = $DB->get_records('elediachecklist_item', array('checklist' => $checklist->id), '', 'id');
-    if (!empty($items)) {
-        $items = array_keys($items);
-        $DB->delete_records_list('elediachecklist_check', 'item', $items);
-        $DB->delete_records_list('elediachecklist_comment', 'itemid', $items);
-        $DB->delete_records('elediachecklist_item', array('checklist' => $checklist->id));
-    }
+    // Do not execute! Dangerous for $checklist->id = 1 !
+    // $checklist->id = 1 should be the only one!
+    //$items = $DB->get_records('elediachecklist_item', array('checklist' => $checklist->id), '', 'id');
+    //if (!empty($items)) {
+    //    $items = array_keys($items);
+    //    $DB->delete_records_list('elediachecklist_check', 'item', $items);
+    //    $DB->delete_records_list('elediachecklist_comment', 'itemid', $items);
+    //    $DB->delete_records('elediachecklist_item', array('checklist' => $checklist->id));
+    //}
     $DB->delete_records('elediachecklist', array('id' => $checklist->id));
 
     elediachecklist_grade_item_delete($checklist);
@@ -922,7 +1012,7 @@ function elediachecklist_supports($feature) {
             return true;
         // !!! //.
         case FEATURE_BACKUP_MOODLE2:
-            return false;
+            return true;
         case FEATURE_SHOW_DESCRIPTION:
             return true;
 
