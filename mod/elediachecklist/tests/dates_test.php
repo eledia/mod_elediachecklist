@@ -102,7 +102,8 @@ class dates_test extends \advanced_testcase {
 
         // Check the checklist in c2.
         $chk2 = $DB->get_record('elediachecklist', ['course' => $c2->id], '*', MUST_EXIST);
-        $items = $DB->get_records('elediachecklist_item', ['checklist' => $chk2->id], 'position');
+        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+        $items = $DB->get_records($tab, ['checklist' => $chk2->id], 'position');
 
         $this->assertCount(3, $items);
         list($item1, $item2, $item3) = array_values($items);

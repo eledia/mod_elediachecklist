@@ -34,21 +34,63 @@ $examId = optional_param('examId', 0, PARAM_INT);
 $checklistType = optional_param('type', "", PARAM_STRINGID);
 $idItem = optional_param('idItem', 0, PARAM_INT);
 
+
 if ($checklistType == "") {
+    $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+
+    // $nextid
+
+    $sql = "SELECT id FROM {".$tab."} ORDER BY id DESC ";
+    $checks = $DB->get_records_sql($sql);
+    $nextid = 1;
+    if($checks) {
+        $check = array_shift($checks);
+        $nextid = $check->id + 1;
+    }
+
+    //$checks = $DB->get_records($tab);
+    //$nextid = NULL;
+    //foreach($checks as $check) {
+    //    if($check->id > $nextid) {
+    //        $nextid = $check->id;
+    //    }
+    //}
+    //$nextid++;
+
     if ($checked) {
-        $DB->execute("DELETE FROM {elediachecklist_check} WHERE  item=" . $topicId . " AND teacherId=" . $examId);
-        $DB->execute("INSERT INTO {elediachecklist_check} (item, userid, teachermark, teachertimestamp, teacherid) VALUES (" . $topicId . ", 0, 1, '1633993780', " . $examId . ")");
+        $DB->execute("DELETE FROM {".$tab."} WHERE  item=" . $topicId . " AND teacherId=" . $examId);
+        $DB->execute("INSERT INTO {".$tab."} (id, item, userid, teachermark, teachertimestamp, teacherid) VALUES (".$nextid.", " . $topicId . ", 0, 1, '1633993780', " . $examId . ")");
     } else {
-        $DB->execute("DELETE FROM {elediachecklist_check} WHERE  item=" . $topicId . " AND teacherId=" . $examId);
+        $DB->execute("DELETE FROM {".$tab."} WHERE  item=" . $topicId . " AND teacherId=" . $examId);
     }
 }
+else if ($checklistType == "qm" || $checklistType == "ea") {
+    $tab = elediachecklist_tab('eledia_adminexamdates_my_chk'); // elediachecklist__my_check
 
-if ($checklistType == "qm" || $checklistType == "ea") {
+    // $nextid
+
+    $sql = "SELECT id FROM {".$tab."} ORDER BY id DESC ";
+    $checks = $DB->get_records_sql($sql);
+    $nextid = 1;
+    if($checks) {
+        $check = array_shift($checks);
+        $nextid = $check->id + 1;
+    }
+
+    //$checks = $DB->get_records($tab);
+    //$nextid = NULL;
+    //foreach($checks as $check) {
+    //    if($check->id > $nextid) {
+    //        $nextid = $check->id;
+    //    }
+    //}
+    //$nextid++;
+
     if ($checked) {
-        $DB->execute("DELETE FROM {elediachecklist_my_check} WHERE  id_item=" . $topicId . " AND id_exam=" . $examId);
-        $DB->execute("INSERT INTO {elediachecklist_my_check} (id_item, id_exam) VALUES (" . $topicId . ", " . $examId . ")");
+        $DB->execute("DELETE FROM {".$tab."} WHERE  id_item=" . $topicId . " AND id_exam=" . $examId);
+        $DB->execute("INSERT INTO {".$tab."} (id, id_item, id_exam) VALUES (".$nextid.", " . $topicId . ", " . $examId . ")");
     } else {
-        $DB->execute("DELETE FROM {elediachecklist_my_check} WHERE  id_item=" . $topicId . " AND id_exam=" . $examId);
+        $DB->execute("DELETE FROM {".$tab."} WHERE  id_item=" . $topicId . " AND id_exam=" . $examId);
     }
 }
 

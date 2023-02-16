@@ -24,10 +24,9 @@
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
-//$plugin->version = 2022111100; // davor!!
-$plugin->version = 2023020300;  // The current module version (Date: YYYYMMDDXX).
+$plugin->version = 2023021500;  // The current module version (Date: YYYYMMDDXX).
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '3.9.0.4';
+$plugin->release = '3.9.0.5';
 $plugin->requires = 2020061500; // Moodle 3.9.0.
 $plugin->component = 'mod_elediachecklist';
 $plugin->dependencies = $plugin->dependencies = array(

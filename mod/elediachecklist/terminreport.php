@@ -21,6 +21,7 @@
  */
 
 require('../../config.php');
+require_once(__DIR__.'/lib.php');
 
 global $USER, $CFG, $PAGE, $OUTPUT, $DB;
 
@@ -54,27 +55,16 @@ class MyTable {
             $myexams = $DB->get_records("eledia_adminexamdates", ['responsibleperson' => $USER->id]);
         }
 
-/*
-        $sql = "";
-        $count = 0;
-        foreach($myexams as $me) {
-            if ($count > 0)
-                $sql = $sql . " UNION ";
-            $sql = $sql . "SELECT item.id, " . $me->id . " as examid, (SELECT examname from mdl_eledia_adminexamdates exam where exam.id = " . $me->id . ") AS ExamName, CASE  WHEN ch.id IS NOT NULL THEN 'X' ELSE '-' END AS Checked, item.displaytext AS Topic, 
-            DATE_FORMAT(DATE_ADD(from_unixtime(floor((SELECT examtimestart from mdl_eledia_adminexamdates exam where exam.id = " . $me->id . "))), INTERVAL item.duetime DAY),'%d.%m.%Y') AS TopicDate 
-            from mdl_elediachecklist_item item
-            LEFT join mdl_elediachecklist_check ch ON (item.id = ch.item AND ch.teacherid = " . $me->id . ") WHERE ch.id IS null 
-            ";
-
-            $count = count + 1;
-        }
-*/
+        $tab1 = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+        $tab2 = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
 
         $sql = "";
         $count = 0;
         foreach($myexams as $me) {
+
             if ($count > 0)
                 $sql = $sql . " UNION ";
+
             $sql = $sql . "SELECT 
             item.id, 
             " . $me->id . " as examid, 
@@ -89,8 +79,8 @@ class MyTable {
             (SELECT examtimestart FROM {eledia_adminexamdates} AS exam WHERE exam.id = " . $me->id . ") AS TopicDate, 
             item.duetime 
             
-            FROM {elediachecklist_item} AS item
-            LEFT JOIN {elediachecklist_check} AS ch ON (item.id = ch.item AND ch.teacherid = " . $me->id . ") 
+            FROM {".$tab1."} AS item
+            LEFT JOIN {".$tab2."} AS ch ON (item.id = ch.item AND ch.teacherid = " . $me->id . ") 
             WHERE ch.id IS null 
             ";
 

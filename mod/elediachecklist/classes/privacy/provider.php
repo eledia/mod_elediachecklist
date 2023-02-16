@@ -49,48 +49,44 @@ class provider implements \core_privacy\local\metadata\provider,
      * @return collection
      */
     public static function get_metadata(collection $collection) : collection {
-        // 'checklist_XXX' ueberall geaendert zu 'elediachecklist_XXX'
-        // 'elediachecklist_item' ... erstmal so lassen
-        // /tests/privacy_provider_test.php (irgendwann nachziehen)
-        // DIE ANGABEN HIER HABEN WOHL NUR REINE INFO-ZWECKE?
-        // -----
-        // Es fehlen hier noch die folgenden Tabellen, oder? (2023-01-03), ng
-        // - elediachecklist
-        // - elediachecklist_my_check
-        // - elediachecklist_my_item
-        // - elediachecklist_item_date
-        // -----
-        $collection->add_database_table(
-            'elediachecklist_item',
-            [
-                'checklist' => 'privacy:metadata:elediachecklist_item:checklist',
-                'userid' => 'privacy:metadata:elediachecklist_item:userid',
-                'displaytext' => 'privacy:metadata:elediachecklist_item:displaytext',
-            ],
-            'privacy:metadata:elediachecklist_item'
-        );
-        $collection->add_database_table(
-            'elediachecklist_check',
-            [
-                'item' => 'privacy:metadata:elediachecklist_check:item',
-                'userid' => 'privacy:metadata:elediachecklist_check:userid',
-                'usertimestamp' => 'privacy:metadata:elediachecklist_check:usertimestamp',
-                'teachermark' => 'privacy:metadata:elediachecklist_check:teachermark',
-                'teachertimestamp' => 'privacy:metadata:elediachecklist_check:teachertimestamp',
-                'teacherid' => 'privacy:metadata:elediachecklist_check:teacherid',
-            ],
-            'privacy:metadata:elediachecklist_check'
-        );
-        $collection->add_database_table(
-            'elediachecklist_comment',
-            [
-                'itemid' => 'privacy:metadata:elediachecklist_comment:itemid',
-                'userid' => 'privacy:metadata:elediachecklist_comment:userid',
-                'commentby' => 'privacy:metadata:elediachecklist_comment:commentby',
-                'text' => 'privacy:metadata:elediachecklist_comment:text',
-            ],
-            'privacy:metadata:elediachecklist_comment'
-        );
+
+        //$tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+        //$collection->add_database_table(
+        //    $tab,
+        //    [
+        //        'checklist' => 'privacy:metadata:'.$tab.':checklist',
+        //        'userid' => 'privacy:metadata:'.$tab.':userid',
+        //        'displaytext' => 'privacy:metadata:'.$tab.':displaytext',
+        //    ],
+        //    'privacy:metadata:'.$tab
+        //);
+
+        //$tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+        //$collection->add_database_table(
+        //    $tab,
+        //    [
+        //        'item' => 'privacy:metadata:'.$tab.':item',
+        //        'userid' => 'privacy:metadata:'.$tab.':userid',
+        //        'usertimestamp' => 'privacy:metadata:'.$tab.':usertimestamp',
+        //        'teachermark' => 'privacy:metadata:'.$tab.':teachermark',
+        //        'teachertimestamp' => 'privacy:metadata:'.$tab.':teachertimestamp',
+        //        'teacherid' => 'privacy:metadata:'.$tab.':teacherid',
+        //    ],
+        //    'privacy:metadata:'.$tab
+        //);
+
+        //$tab = elediachecklist_tab('eledia_adminexamdates_cmt'); // elediachecklist__comment
+        //$collection->add_database_table(
+        //    $tab,
+        //    [
+        //        'itemid' => 'privacy:metadata:'.$tab.':itemid',
+        //        'userid' => 'privacy:metadata:'.$tab.':userid',
+        //        'commentby' => 'privacy:metadata:'.$tab.':commentby',
+        //        'text' => 'privacy:metadata:'.$tab.':text',
+        //    ],
+        //    'privacy:metadata:'.$tab
+        //);
+
         return $collection;
     }
 
@@ -130,39 +126,44 @@ class provider implements \core_privacy\local\metadata\provider,
         ];
 
         // User-created personal checklist items.
+        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
         $sql = '
            SELECT c.id
              FROM {context} c
              JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                                       AND cm.module = :modid
              JOIN {elediachecklist} ck ON ck.id = cm.instance
-             JOIN {elediachecklist_item} ci ON ci.checklist = ck.id
+             JOIN {'.$tab.'} ci ON ci.checklist = ck.id
             WHERE ci.userid = :userid
         ';
         $contextlist->add_from_sql($sql, $params);
 
         // Items that have been checked-off by the user (or for the user, by their teacher).
+        $tab1 = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+        $tab2 = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
         $sql = '
            SELECT c.id
              FROM {context} c
              JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                                       AND cm.module = :modid
              JOIN {elediachecklist} ck ON ck.id = cm.instance
-             JOIN {elediachecklist_item} ci ON ci.checklist = ck.id
-             JOIN {elediachecklist_check} cc ON cc.item = ci.id
+             JOIN {'.$tab1.'} ci ON ci.checklist = ck.id
+             JOIN {'.$tab2.'} cc ON cc.item = ci.id
             WHERE cc.userid = :userid
         ';
         $contextlist->add_from_sql($sql, $params);
 
         // Comments made by the teacher about a particular item for a user.
+        $tab1 = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+        $tab2 = elediachecklist_tab('eledia_adminexamdates_cmt'); // elediachecklist__comment
         $sql = '
            SELECT c.id
              FROM {context} c
              JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                                       AND cm.module = :modid
              JOIN {elediachecklist} ck ON ck.id = cm.instance
-             JOIN {elediachecklist_item} ci ON ci.checklist = ck.id
-             JOIN {elediachecklist_comment} ccm ON ccm.itemid = ci.id
+             JOIN {'.$tab1.'} ci ON ci.checklist = ck.id
+             JOIN {'.$tab2.'} ccm ON ccm.itemid = ci.id
             WHERE ccm.userid = :userid
         ';
         $contextlist->add_from_sql($sql, $params);
@@ -191,9 +192,10 @@ class provider implements \core_privacy\local\metadata\provider,
         ];
 
         // User-created personal checklist items.
+        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
         $sql = "
             SELECT ci.userid
-              FROM {elediachecklist_item} ci
+              FROM {".$tab."} ci
               JOIN {elediachecklist} ck ON ck.id = ci.checklist
               JOIN {course_modules} cm ON cm.instance = ck.id AND cm.module = :modid
               JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :contextlevel
@@ -202,10 +204,12 @@ class provider implements \core_privacy\local\metadata\provider,
         $userlist->add_from_sql('userid', $sql, $params);
 
         // Items that have been checked-off by the user (or for the user, by their teacher).
+        $tab1 = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+        $tab2 = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
         $sql = "
             SELECT cc.userid
-              FROM {elediachecklist_check} cc
-              JOIN {elediachecklist_item} ci ON ci.id = cc.item
+              FROM {".$tab1."} cc
+              JOIN {".$tab2."} ci ON ci.id = cc.item
               JOIN {elediachecklist} ck ON ck.id = ci.checklist
               JOIN {course_modules} cm ON cm.instance = ck.id AND cm.module = :modid
               JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :contextlevel
@@ -214,10 +218,12 @@ class provider implements \core_privacy\local\metadata\provider,
         $userlist->add_from_sql('userid', $sql, $params);
 
         // Comments made by the teacher about a particular item for a user.
+        $tab1 = elediachecklist_tab('eledia_adminexamdates_cmt'); // elediachecklist__comment
+        $tab2 = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
         $sql = "
             SELECT ccm.userid
-              FROM {elediachecklist_comment} ccm
-              JOIN {elediachecklist_item} ci ON ci.id = ccm.itemid
+              FROM {".$tab1."} ccm
+              JOIN {".$tab2."} ci ON ci.id = ccm.itemid
               JOIN {elediachecklist} ck ON ck.id = ci.checklist
               JOIN {course_modules} cm ON cm.instance = ck.id AND cm.module = :modid
               JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :contextlevel
@@ -242,6 +248,10 @@ class provider implements \core_privacy\local\metadata\provider,
         $user = $contextlist->get_user();
         list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
 
+        $tab1 = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+        $tab2 = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+        $tab3 = elediachecklist_tab('eledia_adminexamdates_cmt'); // elediachecklist__comment
+
         $sql = "SELECT cm.id AS cmid,
                        ci.displaytext,
                        cc.usertimestamp,
@@ -254,9 +264,9 @@ class provider implements \core_privacy\local\metadata\provider,
                  FROM {context} c
                  JOIN {course_modules} cm ON cm.id = c.instanceid
                  JOIN {elediachecklist} ck ON ck.id = cm.instance
-                 JOIN {elediachecklist_item} ci ON ci.checklist = ck.id
-                 LEFT JOIN {elediachecklist_check} cc ON cc.item = ci.id
-                 LEFT JOIN {elediachecklist_comment} ccm ON ccm.itemid = ci.id
+                 JOIN {".$tab1."} ci ON ci.checklist = ck.id
+                 LEFT JOIN {".$tab2."} cc ON cc.item = ci.id
+                 LEFT JOIN {".$tab3."} ccm ON ccm.itemid = ci.id
 
                 WHERE c.id $contextsql
                   AND (ci.userid = 0 OR ci.userid = :userid1)
@@ -334,11 +344,20 @@ class provider implements \core_privacy\local\metadata\provider,
         if (!$cm = get_coursemodule_from_id('elediachecklist', $context->instanceid)) {
             return;
         }
-        $itemids = $DB->get_fieldset_select('elediachecklist_item', 'id', 'checklist = ?', [$cm->instance]);
+
+        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+        $itemids = $DB->get_fieldset_select($tab, 'id', 'checklist = ?', [$cm->instance]);
+
         if ($itemids) {
-            $DB->delete_records_list('elediachecklist_check', 'item', $itemids);
-            $DB->delete_records_list('elediachecklist_comment', 'itemid', $itemids);
-            $DB->delete_records_select('elediachecklist_item', 'checklist = ? AND userid <> 0', [$cm->instance]);
+
+            $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+            $DB->delete_records_list($tab, 'item', $itemids);
+
+            $tab = elediachecklist_tab('eledia_adminexamdates_cmt'); // elediachecklist__comment
+            $DB->delete_records_list($tab, 'itemid', $itemids);
+
+            $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+            $DB->delete_records_select($tab, 'checklist = ? AND userid <> 0', [$cm->instance]);
         }
     }
 
@@ -362,14 +381,24 @@ class provider implements \core_privacy\local\metadata\provider,
             if (!$cm = get_coursemodule_from_id('elediachecklist', $context->instanceid)) {
                 continue;
             }
-            $itemids = $DB->get_fieldset_select('elediachecklist_item', 'id', 'checklist = ?', [$cm->instance]);
+
+            $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+            $itemids = $DB->get_fieldset_select($tab, 'id', 'checklist = ?', [$cm->instance]);
+
             if ($itemids) {
+
                 list($isql, $params) = $DB->get_in_or_equal($itemids, SQL_PARAMS_NAMED);
                 $params['userid'] = $userid;
-                $DB->delete_records_select('elediachecklist_check', "item $isql AND userid = :userid", $params);
-                $DB->delete_records_select('elediachecklist_comment', "itemid $isql AND userid = :userid", $params);
+
+                $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+                $DB->delete_records_select($tab, "item $isql AND userid = :userid", $params);
+
+                $tab = elediachecklist_tab('eledia_adminexamdates_cmt'); // elediachecklist__comment
+                $DB->delete_records_select($tab, "itemid $isql AND userid = :userid", $params);
+
+                $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
                 $params = ['instanceid' => $cm->instance, 'userid' => $userid];
-                $DB->delete_records_select('elediachecklist_item', 'checklist = :instanceid AND userid = :userid', $params);
+                $DB->delete_records_select($tab, 'checklist = :instanceid AND userid = :userid', $params);
             }
         }
     }
@@ -394,28 +423,32 @@ class provider implements \core_privacy\local\metadata\provider,
         }
 
         // Prepare SQL to gather all completed IDs.
-        $itemids = $DB->get_fieldset_select('elediachecklist_item', 'id', 'checklist = ?', [$cm->instance]);
+        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+        $itemids = $DB->get_fieldset_select($tab, 'id', 'checklist = ?', [$cm->instance]);
         list($itsql, $itparams) = $DB->get_in_or_equal($itemids, SQL_PARAMS_NAMED);
         $userids = $userlist->get_userids();
         list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
 
         // Delete user-created personal checklist items.
+        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
         $DB->delete_records_select(
-            'elediachecklist_item',
+            $tab,
             "userid $insql AND checklist = :checklistid",
             array_merge($inparams, ['checklistid' => $cm->instance])
         );
 
         // Delete items that have been checked-off by the user (or for the user, by their teacher).
+        $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
         $DB->delete_records_select(
-            'elediachecklist_check',
+            $tab,
             "userid $insql AND item $itsql",
             array_merge($inparams, $itparams)
         );
 
         // Delete comments made by a teacher about a particular item for a student.
+        $tab = elediachecklist_tab('eledia_adminexamdates_cmt'); // elediachecklist__comment
         $DB->delete_records_select(
-            'elediachecklist_comment',
+            $tab,
             "userid $insql AND itemid $itsql",
             array_merge($inparams, $itparams)
         );

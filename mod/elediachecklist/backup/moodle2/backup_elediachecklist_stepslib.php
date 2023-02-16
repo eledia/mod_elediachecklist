@@ -123,7 +123,7 @@ class backup_elediachecklist_activity_structure_step extends backup_activity_str
         //    // ------------------------------------- //.
         //    // 'id'      -> NEIN -> in $attributes genannt
         //    // 'examid'  -> ???  -> eledia_admininexamdates.id
-        //    // 'checkid' -> ???  -> elediachecklist_item.id -> immer 7 // -> keine Annotations, da feste IDs in Tabelle
+        //    // 'checkid' -> ???  -> elediachecklist__item.id -> immer 7 // -> keine Annotations, da feste IDs in Tabelle
         //    // ------------------------------------- //.
         //    //'id',//.
         //    'examid', 'checkid', 'checkdate'
@@ -132,7 +132,7 @@ class backup_elediachecklist_activity_structure_step extends backup_activity_str
         //$elediachecklistmycheck = new backup_nested_element('elediachecklistmycheck', array('id'), array(
         //    // ------------------------------------- //.
         //    // 'id'           -> NEIN -> in $attributes genannt
-        //    // 'id_item'      -> ???  -> elediachecklist_my_item.id
+        //    // 'id_item'      -> ???  -> elediachecklist__my_item.id
         //    // 'id_checklist' -> ???  -> immer 0
         //    // 'id_exam'      -> ???  -> eledia_admininexamdates.id
         //    // ------------------------------------- //.
@@ -168,45 +168,40 @@ class backup_elediachecklist_activity_structure_step extends backup_activity_str
 
         $elediachecklist->set_source_table('elediachecklist', array('id' => backup::VAR_ACTIVITYID));
 
-        // ??? $userinfo
         //if ($userinfo) {
-        //    // elediachecklist.id -> elediachecklist_item.checklist
-        //    $elediachecklistitem->set_source_table('elediachecklist_item', array('checklist' => backup::VAR_PARENTID));
-        //    // elediachecklst_item.id -> elediachecklist_check.item
-        //    $elediachecklistcheck->set_source_table('elediachecklist_check', array('item' => backup::VAR_PARENTID));
-        //    // elediachecklst_item.id -> elediachecklist_comment.itemid
-        //    $elediachecklistcomment->set_source_table('elediachecklist_comment', array('itemid' => backup::VAR_PARENTID));
-        //    // elediachecklst_item.id -> elediachecklist_item_date.checkid
-        //    $elediachecklistitemdate->set_source_table('elediachecklist_item_date', array('checkid' => backup::VAR_PARENTID));
+        //    $elediachecklistitem->set_source_table('elediachecklist__item', array('checklist' => backup::VAR_PARENTID));
+        //    $elediachecklistcheck->set_source_table('elediachecklist__check', array('item' => backup::VAR_PARENTID));
+        //    $elediachecklistcomment->set_source_table('elediachecklist__comment', array('itemid' => backup::VAR_PARENTID));
+        //    $elediachecklistitemdate->set_source_table('elediachecklist__item_date', array('checkid' => backup::VAR_PARENTID));
         //} else {
-        //    $elediachecklistitem->set_source_sql('SELECT * FROM {elediachecklist_item} WHERE userid = 0 AND checklist = ?', array(backup::VAR_PARENTID));
-        //    $elediachecklistitemdate->set_source_table('elediachecklist_item_date', array('checkid' => backup::VAR_PARENTID));
+        //    $elediachecklistitem->set_source_sql('SELECT * FROM {elediachecklist__item} WHERE userid = 0 AND checklist = ?', array(backup::VAR_PARENTID));
+        //    $elediachecklistitemdate->set_source_table('elediachecklist__item_date', array('checkid' => backup::VAR_PARENTID));
         //}
 
 
         // 5 ---------- Define id annotations.
         // FK-Beziehungen
 
-        // In der Tabelle 'elediachecklist_item' verweist das Feld 'userid' auf die Tabelle 'user'.
-        // In der Tabelle 'elediachecklist_item' verweist das Feld 'moduleid' auf die Tabelle 'course_modules'.
+        // In der Tabelle 'elediachecklist__item' verweist das Feld 'userid' auf die Tabelle 'user'.
+        // In der Tabelle 'elediachecklist__item' verweist das Feld 'moduleid' auf die Tabelle 'course_modules'.
         //$elediachecklistitem->annotate_ids('user', 'userid');
         //$elediachecklistitem->annotate_ids('course_modules', 'moduleid');
-        // ??? Was ist mit all den anderen IDs in 'elediachecklist_item'?
+        // ??? Was ist mit all den anderen IDs in 'elediachecklist__item'?
         // ??? 'eventid' nicht genannt
         // ??? 'groupingid' nicht genannt
         // ??? 'linkcourseid' nicht genannt
 
-        // In der Tabelle 'elediachecklist_check' verweist das Feld 'userid' auf die Tabelle 'user'.
-        // In der Tabelle 'elediachecklist_check' verweist das Feld 'teacherid' auf die Tabelle 'eledia_admininexamdates'.
+        // In der Tabelle 'elediachecklist__check' verweist das Feld 'userid' auf die Tabelle 'user'.
+        // In der Tabelle 'elediachecklist__check' verweist das Feld 'teacherid' auf die Tabelle 'eledia_admininexamdates'.
         //$elediachecklistcheck->annotate_ids('user', 'userid');
         //$elediachecklistcheck->annotate_ids('eledia_adminexamdates', 'teacherid');
 
-        // In der Tabelle 'elediachecklist_comment' verweist das Feld 'userid' auf die Tabelle 'user'.
-        // In der Tabelle 'elediachecklist_comment' verweist das Feld 'commentby' auf die Tabelle 'user'.
+        // In der Tabelle 'elediachecklist__comment' verweist das Feld 'userid' auf die Tabelle 'user'.
+        // In der Tabelle 'elediachecklist__comment' verweist das Feld 'commentby' auf die Tabelle 'user'.
         //$elediachecklistcomment->annotate_ids('user', 'userid');
         //$elediachecklistcomment->annotate_ids('user', 'commentby');
 
-        // In der Tabelle 'elediachecklist_item_date' verweist das Feld 'examid' auf die Tabelle 'eledia_admininexamdates'.
+        // In der Tabelle 'elediachecklist__item_date' verweist das Feld 'examid' auf die Tabelle 'eledia_admininexamdates'.
         //$elediachecklistitemdate->annotate_ids('examid', 'eledia_admininexamdates');
 
 
@@ -215,7 +210,7 @@ class backup_elediachecklist_activity_structure_step extends backup_activity_str
         $elediachecklist->annotate_files('mod_elediachecklist', 'intro', null); // This file area hasn't itemid.
 
 
-        // ??? Wo/wie werden die Eintraege beruecksichtigt von: elediachecklist_my_item ???
+        // ??? Wo/wie werden die Eintraege beruecksichtigt von: elediachecklist__my_item ???
         // 7 ---------- Return the root element (forum), wrapped into standard activity structure.
         return $this->prepare_activity_structure($elediachecklist);
     }

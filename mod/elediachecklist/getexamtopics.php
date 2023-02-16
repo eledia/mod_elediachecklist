@@ -97,16 +97,17 @@ $userid = 0;
 $context = context_course::instance($courseid);
 $PAGE->set_context($context);
 
-$sql  = "SELECT * FROM {elediachecklist_item} ";
+$tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+$sql  = "SELECT * FROM {".$tab."} ";
 $sql .= "WHERE checklist = ".$checklist." ";
-//$sql .= "ORDER BY position ASC ";
 $sql .= "ORDER BY duetime ASC, displaytext ASC ";
 $examTopics = $DB->get_records_sql($sql);
 
 $htmlTopics = '';
 
 // TODO Add 'examid' field to mdl_checklist_check table and use it instead teacherid
-$checkedTopics = $DB->get_records("elediachecklist_check", ['teacherid' => $examid]);
+$tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+$checkedTopics = $DB->get_records($tab, ['teacherid' => $examid]);
 
 if ($examid == -1) {
     foreach ($examTopics as &$topic) {
@@ -142,7 +143,8 @@ if ($examid == -1) {
         if (is_siteadmin() && $topic->displaytext == "Endabnahme") {
 
             // The origin stated date. //.
-            $eaDate = $DB->get_record("elediachecklist_item_date", ['examid' => $examid]);
+            $tab = elediachecklist_tab('eledia_adminexamdates_itm_d'); // elediachecklist__item_date
+            $eaDate = $DB->get_record($tab, ['examid' => $examid]);
             $tp = $eaDate->checkdate;
             $date = date('d.m.Y', $tp);
             $tdtitle = elediachecklist_get_weekday_name($tp);
@@ -150,17 +152,17 @@ if ($examid == -1) {
             $isholiday = false;
 
             // ERLEDIGT & AUSKOMMENTIERT
-            //$mixed = elediachecklist_is_holiday($date);
-            //if(is_array($mixed)) {
-            //    $isholiday = true;
-            //    $holidaydate = $mixed['date'];
-            //    $holidayname = $mixed['name'];
-            //    // Next workday //.
-            //    $date = elediachecklist_get_next_workday_after_holiday($date);
-            //    $tp = elediachecklist_date_to_timestamp($date);
-            //    $tdtitle = elediachecklist_get_weekday_name($tp);
-            //    //echo '<pre>'.print_r($date, true).'</pre>';
-            //}
+            $mixed = elediachecklist_is_holiday($date);
+            if(is_array($mixed)) {
+                $isholiday = true;
+                $holidaydate = $mixed['date'];
+                $holidayname = $mixed['name'];
+                // Next workday //.
+                $date = elediachecklist_get_next_workday_after_holiday($date);
+                $tp = elediachecklist_date_to_timestamp($date);
+                $tdtitle = elediachecklist_get_weekday_name($tp);
+                //echo '<pre>'.print_r($date, true).'</pre>';
+            }
 
             $add  = '<td>';
             $add .= '<span title="'.$tdtitle.'">';
@@ -186,17 +188,17 @@ if ($examid == -1) {
             $isholiday = false;
 
             // ERLEDIGT & AUSKOMMENTIERT
-            //$mixed = elediachecklist_is_holiday($date);
-            //if(is_array($mixed)) {
-            //    $isholiday = true;
-            //    $holidaydate = $mixed['date'];
-            //    $holidayname = $mixed['name'];
-            //    // Next workday //.
-            //    $date = elediachecklist_get_next_workday_after_holiday($date);
-            //    $tp = elediachecklist_date_to_timestamp($date);
-            //    $tdtitle = elediachecklist_get_weekday_name($tp);
-            //    //echo '<pre>'.print_r($date, true).'</pre>';
-            //}
+            $mixed = elediachecklist_is_holiday($date);
+            if(is_array($mixed)) {
+                $isholiday = true;
+                $holidaydate = $mixed['date'];
+                $holidayname = $mixed['name'];
+                // Next workday //.
+                $date = elediachecklist_get_next_workday_after_holiday($date);
+                $tp = elediachecklist_date_to_timestamp($date);
+                $tdtitle = elediachecklist_get_weekday_name($tp);
+                //echo '<pre>'.print_r($date, true).'</pre>';
+            }
 
             $add  = '<td title="'.$tdtitle.'">';
             $add .= $date;

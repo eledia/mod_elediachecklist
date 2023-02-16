@@ -106,8 +106,8 @@ class PDF extends TCPDF {
 
 // DATEN //.
 
-//$sql = "SELECT * FROM {elediachecklist_item} ORDER BY position ASC";
-$sql = "SELECT * FROM {elediachecklist_item} ORDER BY duetime ASC, displaytext ASC";
+$tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+$sql = "SELECT * FROM {".$tab."} ORDER BY duetime ASC, displaytext ASC";
 $examTopics = $DB->get_records_sql($sql);
 
 
@@ -122,7 +122,8 @@ $properties = array(
         'duration'       => '',      // Zeitraum der Raumbuchung    //.
 );
 
-$checkedTopics = $DB->get_records("elediachecklist_check", ['teacherid' => $examid]);
+$tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+$checkedTopics = $DB->get_records($tab, ['teacherid' => $examid]);
 
 
 $sql = "SELECT * from {eledia_adminexamdates} exam where id =" . $examid;
@@ -283,20 +284,21 @@ foreach ($examTopics as &$topic) {
     $third = '-';
     if($examid > 0) {
         if ($topic->displaytext == "Endabnahme") {
-            $eaDate = $DB->get_record("elediachecklist_item_date", ['examid' => $examid]);
+            $tab = elediachecklist_tab('eledia_adminexamdates_itm_d'); // elediachecklist__item_date
+            $eaDate = $DB->get_record($tab, ['examid' => $examid]);
             if (isset($eaDate->checkdate)) {
                 $date = date("d.m.Y", $eaDate->checkdate);
                 // Holiday to this day? //.
                 $isholiday = false;
 
                 // ERLEDIGT & AUSKOMMENTIERT
-                //$mixed = elediachecklist_is_holiday($date);
-                //if(is_array($mixed)) {
-                //    $isholiday = true;
-                //    // Next workday //.
-                //    $date = elediachecklist_get_next_workday_after_holiday($date);
-                //    $date = '<i>'.$date.'</i>';
-                //}
+                $mixed = elediachecklist_is_holiday($date);
+                if(is_array($mixed)) {
+                    $isholiday = true;
+                    // Next workday //.
+                    $date = elediachecklist_get_next_workday_after_holiday($date);
+                    //$date = '<i>'.$date.'</i>';
+                }
 
                 $third = $date;
             }
@@ -307,13 +309,13 @@ foreach ($examTopics as &$topic) {
                 $isholiday = false;
 
                 // ERLEDIGT & AUSKOMMENTIERT
-                //$mixed = elediachecklist_is_holiday($date);
-                //if(is_array($mixed)) {
-                //    $isholiday = true;
-                //    // Next workday //.
-                //    $date = elediachecklist_get_next_workday_after_holiday($date);
-                //    $date = '<i>'.$date.'</i>';
-                //}
+                $mixed = elediachecklist_is_holiday($date);
+                if(is_array($mixed)) {
+                    $isholiday = true;
+                    // Next workday //.
+                    $date = elediachecklist_get_next_workday_after_holiday($date);
+                    //$date = '<i>'.$date.'</i>';
+                }
 
                 $third = $date;
             }
@@ -338,15 +340,18 @@ $pdf->Output($CFG->dataroot . "/" . $pdfName, 'F');
 
 // E-MAIL-VERSAND //.
 
+$tab1 = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+$tab2 = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+
 $sql  = "SELECT ";
 $sql .= "myitem.id, ";
 $sql .= "myitem.emailtext, ";
 $sql .= "myitem.duetime, ";
 $sql .= "exam.examtimestart, ";
 $sql .= "exam.examname ";
-$sql .= "FROM {elediachecklist_item} AS myitem ";
+$sql .= "FROM {".$tab1."} AS myitem ";
 $sql .= "INNER JOIN {eledia_adminexamdates} exam ON exam.id = ? ";
-$sql .= "WHERE myitem.id NOT IN (SELECT mycheck.item FROM {elediachecklist_check} AS mycheck WHERE mycheck.teacherid=?) ";
+$sql .= "WHERE myitem.id NOT IN (SELECT mycheck.item FROM {".$tab2."} AS mycheck WHERE mycheck.teacherid=?) ";
 $sql .= "ORDER BY myitem.duetime ";
 $checks = $DB->get_records_sql($sql, ['examid' => $examid, 'examid_' => $examid]);
 // Ich wuerde sagen der 2. Parameter ('examid_' => $examid) ist falsch.
@@ -364,13 +369,13 @@ foreach($checks as $check) {
     $isholiday = false;
 
     // ERLEDIGT & AUSKOMMENTIERT
-    //$mixed = elediachecklist_is_holiday($date);
-    //if(is_array($mixed)) {
-    //    $isholiday = true;
-    //    // Next workday //.
-    //    $date = elediachecklist_get_next_workday_after_holiday($date);
-    //    //$date = $date.'_';
-    //}
+    $mixed = elediachecklist_is_holiday($date);
+    if(is_array($mixed)) {
+        $isholiday = true;
+        // Next workday //.
+        $date = elediachecklist_get_next_workday_after_holiday($date);
+        //$date = $date.'_';
+    }
 
     $displaytext = str_replace('{Datum}', $date, $check->emailtext);
 
@@ -381,13 +386,13 @@ foreach($checks as $check) {
     $isholiday = false;
 
     // ERLEDIGT & AUSKOMMENTIERT
-    //$mixed = elediachecklist_is_holiday($newdate);
-    //if(is_array($mixed)) {
-    //    $isholiday = true;
-    //    // Next workday //.
-    //    $newdate = elediachecklist_get_next_workday_after_holiday($newdate);
-    //    //$newdate = $newdate.'-';
-    //}
+    $mixed = elediachecklist_is_holiday($newdate);
+    if(is_array($mixed)) {
+        $isholiday = true;
+        // Next workday //.
+        $newdate = elediachecklist_get_next_workday_after_holiday($newdate);
+        //$newdate = $newdate.'-';
+    }
 
     // examDate //.
     $tp = $check->examtimestart;

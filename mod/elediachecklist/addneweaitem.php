@@ -32,10 +32,12 @@ $qmName = optional_param('name', 0, PARAM_TEXT);
 $checklistId = optional_param('checklistId', 0, PARAM_INT);
 $qmId = optional_param('EAId', -1, PARAM_INT);
 
+$tab = elediachecklist_tab('eledia_adminexamdates_my_itm'); // elediachecklist__my_item
+
 if ($qmId == -1) {
-    $DB->execute("INSERT INTO {elediachecklist_my_item} (is_checkbox, displaytext, type) VALUES ('1', '" . $qmName . "', 'ea')");
+    $DB->execute("INSERT INTO {".$tab."} (is_checkbox, displaytext, type) VALUES ('1', '" . $qmName . "', 'ea')");
 } else {
-    $DB->execute("UPDATE {elediachecklist_my_item} SET displaytext = ? WHERE id = ?",[$qmName, $qmId]);
+    $DB->execute("UPDATE {".$tab."} SET displaytext = ? WHERE id = ?",[$qmName, $qmId]);
 }
 
 echo "Item added/updated";

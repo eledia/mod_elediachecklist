@@ -21,8 +21,10 @@ if ($ADMIN->fulltree) {
     // EINSTELLUNGEN DES PLUGINS
     */
 
-    //$sql = 'SELECT * FROM {elediachecklist_item} ORDER BY position ASC ';
-    $sql = 'SELECT * FROM {elediachecklist_item} ORDER BY duetime ASC, displaytext ASC';
+    require_once(__DIR__.'/lib.php');
+
+    $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+    $sql = 'SELECT * FROM {'.$tab.'} ORDER BY duetime ASC, displaytext ASC';
     $result = $DB->get_records_sql($sql);
     //echo '<pre>'.print_r($result, true).'</pre>';
 

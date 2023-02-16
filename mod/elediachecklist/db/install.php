@@ -37,12 +37,13 @@ function xmldb_elediachecklist_install() {
     }
 
     // Tab: Qualitaetsmanagement //.
+    /*
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (2, 'Checkpunkte bei der Qualitätssicherung', 0, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (3, 'Kurs: Klausurbezeichnung gemäß Nomenklatur anpassen, Ersteller*innenrechte -> Prüfer*in/Bewerter*in', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (4, 'Testeinstellungen: Zeitbegrenzung, automatische Abgabe aktiviert, Überprüfungsoptionen deaktiviert', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (5, 'Probelauf: Grafiken dargestellt, Maximale Anzahl Fragen pro Seite.', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (6, 'Probelauf: Archiv erstellt und auf Vollständigkeit geprüft.', 1, 'qm')", null);
-    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (7, 'Checkpunkte vor und nach der Endabnahme', 1, 'qm')", null);
+    $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (7, 'Checkpunkte vor und nach der Endabnahme', 0, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (8, 'Kurs für Endabnahme sichtbar geschaltet', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (9, 'Kursformat: Verborgene Abschnitte vollständig unsichtbar.', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (10, 'Testeinstellungen: Safeexambrowser aktivieren.', 1, 'qm')", null);
@@ -73,8 +74,10 @@ function xmldb_elediachecklist_install() {
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (35, 'Excel-Export und Archive für Prüfer bereitstellen und diese informieren', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (36, 'Klausurkurs und Klausur unsichtbar machen und in Bereich Prüfungsumgebung verschieben', 1, 'qm')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (37, 'Kurssicherung erstellen', 1, 'qm')", null);
+    */
 
     // Tab: Endabnahme //.
+    /*
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (38, 'Während der Testklausur mit Dummy', 0, 'ea')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (39, 'Name, Vorname und Matrikelnummer erscheinen im Bildschirmkopf', 1, 'ea')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (40, 'Im SEB funktionieren Pop-Ups (PDF, Bild, Video) und Anwendungen (Taschenrechner usw.).', 1, 'ea')", null);
@@ -89,9 +92,10 @@ function xmldb_elediachecklist_install() {
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (49, 'Das Fachgebiet ist über das Verfahren bei Bewertungsänderungen (Korrektur bei Einzelpersonen, Nachbewertung von Aufgaben für die ganze Klausur) informiert.', 1, 'ea')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (50, 'Bestätigung: Das Fachgebiet übersendet dem E-Klausurteam den verwendeten Notenschlüssel.', 1, 'ea')", null);
     $DB->execute("INSERT INTO {elediachecklist_my_item} VALUES (51, 'Die rechtlichen Vorgaben zur Durchführung dieser E-Klausur wurden beachtet.', 1, 'ea')", null);
-
+    */
 
     // Tab: Termincheckliste //.
+    /*
     $DB->execute("INSERT INTO {elediachecklist_item} VALUES (1, 1, 0, 'Ersteller: innenzugriff vorhanden', 1, 0, 2, -60, 0, 'black', 0, 0, 0, NULL, '', 0, 'Ersteller: innenzugriff vorhanden {Datum}')", null);
     $DB->execute("INSERT INTO {elediachecklist_item} VALUES (2, 1, 0, 'Bereitstellung der Termincheckliste', 2, 0, 0, -34, 0, 'black', 0, 0, 0, NULL, '', 0, 'Bereitstellung der Termincheckliste {Datum}')", null);
     $DB->execute("INSERT INTO {elediachecklist_item} VALUES (3, 1, 0, 'Prüfungskonfiguration beschrieben', 3, 0, 0, -13, 0, 'black', 0, 0, 0, NULL, '', 0, 'Prüfungskonfiguration beschrieben {Datum}')", null);
@@ -109,4 +113,5 @@ function xmldb_elediachecklist_install() {
     $DB->execute("INSERT INTO {elediachecklist_item} VALUES (16, 1, 0, 'Zweitarchivierung und –signierung bei Änderungen', 15, 0, 0, 100, 0, 'black', 0, 0, 0, NULL, '', 0, 'Zweitarchivierung und –signierung bei Änderungen {Datum}')", null);
     $DB->execute("INSERT INTO {elediachecklist_item} VALUES (17, 1, 0, 'Notenschlüssel bereitgestellt', 16, 0, 0, 100, 0, 'black', 0, 0, 0, NULL, '', 0, 'Notenschlüssel bereitgestellt {Datum}')", null);
     $DB->execute("INSERT INTO {elediachecklist_item} VALUES (18, 1, 0, 'Klausur abgeschlossen', 17, 0, 0, 101, 0, ' 990', 0, 0, 0, NULL, '', 0, 'Klausur abgeschlossen {Datum}')", null);
+    */
 }

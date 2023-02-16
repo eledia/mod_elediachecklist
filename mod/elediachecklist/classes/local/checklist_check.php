@@ -31,13 +31,18 @@ global $CFG;
 require_once($CFG->dirroot.'/completion/data_object.php');
 require_once($CFG->dirroot.'/mod/elediachecklist/lib.php');
 
+
+$tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+define('ELEDIACHECKLIST_CHECKLIST_CHECK_TABLE', $tab);
+
+
 /**
  * Class checklist_check
  * @package mod_elediachecklist
  */
 class checklist_check extends data_object {
     /** @var string */
-    public $table = 'elediachecklist_check';
+    public $table = ELEDIACHECKLIST_CHECKLIST_CHECK_TABLE; // elediachecklist__check
     /** @var string[] */
     public $requiredfields = [
         'id', 'item', 'userid', 'usertimestamp', 'teachermark', 'teachertimestamp', 'teacherid'
@@ -75,7 +80,8 @@ class checklist_check extends data_object {
      * @return data_object|false|object
      */
     public static function fetch($params) {
-        return self::fetch_helper('elediachecklist_check', __CLASS__, $params);
+        $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+        return self::fetch_helper($tab, __CLASS__, $params);
     }
 
     /**
@@ -85,7 +91,8 @@ class checklist_check extends data_object {
      * @return array|false|mixed
      */
     public static function fetch_all($params, $sort = false) {
-        $ret = self::fetch_all_helper('elediachecklist_check', __CLASS__, $params);
+        $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+        $ret = self::fetch_all_helper($tab, __CLASS__, $params);
         if (!$ret) {
             $ret = [];
         }
@@ -108,7 +115,8 @@ class checklist_check extends data_object {
 
         list($isql, $params) = $DB->get_in_or_equal($itemids, SQL_PARAMS_NAMED);
         $params['userid'] = $userid;
-        $checks = $DB->get_records_select('elediachecklist_check', "userid = :userid AND item $isql", $params);
+        $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+        $checks = $DB->get_records_select($tab, "userid = :userid AND item $isql", $params);
         foreach ($checks as $check) {
             $ret[$check->item] = new checklist_check();
             self::set_properties($ret[$check->item], $check);

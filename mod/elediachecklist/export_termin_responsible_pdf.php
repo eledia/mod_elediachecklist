@@ -120,19 +120,12 @@ class PDF extends FPDF
 
 $examid = optional_param('examid', 0, PARAM_INT);
 
-$examTopics = $DB->get_records("elediachecklist_item");
-$checkedTopics = $DB->get_records("elediachecklist_check", ['teacherid' => $examid]);
+$tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+$examTopics = $DB->get_records($tab);
 
-//----- ALT
-//$result = mysqli#query($mysqli, "SELECT * from mdl_eledia_adminexamdates exam where id =" . $examid) or die("database error:". mysqli_error($mysqli));
-//$examStart = 0;
-//if (mysqli_num_rows($result) > 0) {
-//    // output data of each row
-//    while($row = mysqli_fetch_assoc($result)) {
-//        $examStart = $row["examtimestart"];
-//    }
-//}
-//----- NEU
+$tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+$checkedTopics = $DB->get_records($tab, ['teacherid' => $examid]);
+
 $sql = "SELECT * from {eledia_adminexamdates} exam where id =" . $examid;
 $result = $DB->get_records_sql($sql);
 $examStart = 0;

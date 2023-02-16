@@ -84,7 +84,8 @@ if ($data = $form->get_data()) {
     if (!$csv->load_csv_content($form->get_file_content('importfile'), 'utf-8', 'comma')) {
         die($csv->get_error());
     }
-    $position = $DB->count_records('elediachecklist_item', array('checklist' => $checklist->id, 'userid' => 0)) + 1;
+    $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+    $position = $DB->count_records($tab, array('checklist' => $checklist->id, 'userid' => 0)) + 1;
 
     $csv->init();
 

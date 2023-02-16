@@ -399,9 +399,10 @@ class checklist_class {
         }
 
         //Create dates for Endabnahme items, for each exam
+        $tab = elediachecklist_tab('eledia_adminexamdates_itm_d'); // elediachecklist__item_date
         $sql  = "SELECT ed.id, ed.examtimestart ";
         $sql .= "FROM {eledia_adminexamdates} AS ed ";
-        $sql .=     "WHERE ed.id NOT IN (SELECT eid.examid FROM {elediachecklist_item_date} AS eid)";
+        $sql .=     "WHERE ed.id NOT IN (SELECT eid.examid FROM {".$tab."} AS eid)";
         $eledia_adminexamdates = $DB->get_records_sql($sql);
         //echo '<pre>'.print_r($eledia_adminexamdates).'</pre>'; die();
         foreach($eledia_adminexamdates as $eledia_adminexamdate) {
@@ -412,7 +413,8 @@ class checklist_class {
             $examtimestart = $eledia_adminexamdate->examtimestart;
             // Jetzt noch minus 5 Tage!
             $checkdate = $examtimestart - (60 * 60 * 24 * 5);
-            $sql  = "INSERT INTO {elediachecklist_item_date} (examid, checkid, checkdate) ";
+            $tab = elediachecklist_tab('eledia_adminexamdates_itm_d'); // elediachecklist__item_date
+            $sql  = "INSERT INTO {".$tab."} (examid, checkid, checkdate) ";
             $sql .= "VALUES (".$examid.", ".$checkid.", ".$checkdate.")";
             $DB->execute($sql);
         }
@@ -545,9 +547,8 @@ class checklist_class {
 
          //Load Exam Topics
         //TODO ADD EXAM ID IN SELECT CONDITION
-        //$examTopics = $DB->get_records("elediachecklist_item", ['checklist' => $this->checklist->id]);
-        //$examTopics = $DB->get_records("elediachecklist_item", ['checklist' => $this->checklist->id]);
-        $sql = "SELECT * FROM {elediachecklist_item} WHERE checklist = ".$this->checklist->id." ORDER BY duetime ASC, displaytext ASC";
+        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+        $sql = "SELECT * FROM {".$tab."} WHERE checklist = ".$this->checklist->id." ORDER BY duetime ASC, displaytext ASC";
         $examTopics = $DB->get_records_sql($sql);
         //echo '<pre>'.print_r($examTopics, true).'</pre>';
 
@@ -646,9 +647,13 @@ class checklist_class {
 
         // Load the currently checked-off items.
         if ($this->userid) {
+
+            $tab1 = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+            $tab2 = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+
             $sql = 'SELECT i.id, c.usertimestamp, c.teachermark, c.teachertimestamp, c.teacherid
-                      FROM {elediachecklist_item} i
-                 LEFT JOIN {elediachecklist_check} c ';
+                      FROM {'.$tab1.'} i
+                 LEFT JOIN {'.$tab2.'} c ';
             $sql .= 'ON (i.id = c.item AND c.userid = ?) WHERE i.checklist = ? ';
 
             $checks = $DB->get_records_sql($sql, array($this->userid, $this->checklist->id));
@@ -810,7 +815,8 @@ class checklist_class {
                         $upd = new stdClass;
                         $upd->id = $item->id;
                         $upd->hidden = $item->hidden;
-                        $DB->update_record('elediachecklist_item', $upd);
+                        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+                        $DB->update_record($tab, $upd);
                         $changes = true;
 
                     } else if (($item->hidden == CHECKLIST_HIDDEN_NO) && !$mods->get_cm($cmid)->visible) {
@@ -819,7 +825,8 @@ class checklist_class {
                         $upd = new stdClass;
                         $upd->id = $item->id;
                         $upd->hidden = $item->hidden;
-                        $DB->update_record('elediachecklist_item', $upd);
+                        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+                        $DB->update_record($tab, $upd);
                         $changes = true;
                     }
 
@@ -830,7 +837,8 @@ class checklist_class {
                             $upd = new stdClass;
                             $upd->id = $item->id;
                             $upd->groupingid = $groupingid;
-                            $DB->update_record('elediachecklist_item', $upd);
+                            $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+                            $DB->update_record($tab, $upd);
                             $changes = true;
                         }
                     } else {
@@ -839,7 +847,8 @@ class checklist_class {
                             $upd = new stdClass;
                             $upd->id = $item->id;
                             $upd->groupingid = 0;
-                            $DB->update_record('elediachecklist_item', $upd);
+                            $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+                            $DB->update_record($tab, $upd);
                             $changes = true;
                         }
                     }
@@ -1143,13 +1152,12 @@ class checklist_class {
             $this->process_view_actions();
         }
 
-        //---- ALT
-        //$itemList = $DB->get_records("elediachecklist_my_item", ['type' => "ea"]);
-        //----- NEU
-        $sql = "SELECT * FROM {elediachecklist_my_item} WHERE type = 'ea' ORDER BY id ASC";
+        $tab = elediachecklist_tab('eledia_adminexamdates_my_itm'); // elediachecklist__my_item
+        $sql = "SELECT * FROM {".$tab."} WHERE type = 'ea' ORDER BY id ASC";
         $itemList = $DB->get_records_sql($sql);
 
-        $checkedItems = $DB->get_records("elediachecklist_my_check", ['id_exam' => $this->myExamId]);
+        $tab = elediachecklist_tab('eledia_adminexamdates_my_chk'); // elediachecklist__my_check
+        $checkedItems = $DB->get_records($tab, ['id_exam' => $this->myExamId]);
 
         $htmlItems = "";
         $checkboxTitle = "";
@@ -1194,7 +1202,9 @@ class checklist_class {
         //$onc .= 'alert(href);';
         $onc .= "window.open(href);";
 
-        $htmlItems .= "<textarea rows='5' name='commentsEA' id='commentsEA' style='width: 100%'></textarea> <br/>";
+        $comment = elediachecklist_endabnahme_read_comment($this->myExamId);
+
+        $htmlItems .= "<textarea rows='5' name='commentsEA' id='commentsEA' style='width: 100%'>".$comment."</textarea> <br/>";
         $htmlItems .= "<a href='#' onclick='".$onc."' class='btn btn-success' data-toggle='modal'>";
         $htmlItems .= "<i class='material-icons'></i> <span>Export PDF</span>";
         $htmlItems .= "</a>";
@@ -1237,13 +1247,12 @@ class checklist_class {
             $this->process_view_actions();
         }
 
-        //----- ALT
-        //$itemList = $DB->get_records("elediachecklist_my_item", ['type' => "qm"]);
-        //----- NEU
-        $sql = "SELECT * FROM {elediachecklist_my_item} WHERE type = 'qm' ORDER BY id";
+        $tab = elediachecklist_tab('eledia_adminexamdates_my_itm'); // elediachecklist__my_item
+        $sql = "SELECT * FROM {".$tab."} WHERE type = 'qm' ORDER BY id";
         $itemList = $DB->get_records_sql($sql);
 
-        $checkedItems = $DB->get_records("elediachecklist_my_check", ['id_exam' => $this->myExamId]);
+        $tab = elediachecklist_tab('eledia_adminexamdates_my_chk'); // elediachecklist__my_check
+        $checkedItems = $DB->get_records($tab, ['id_exam' => $this->myExamId]);
 
         $htmlItems = "";
         $checkboxTitle = "";
@@ -2284,8 +2293,9 @@ class checklist_class {
                 echo '<div>';
                 foreach ($ausers as $auser) {
                     if ($totalitems) {
+                        $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
                         $iparams['user'] = $auser->id;
-                        $tickeditems = $DB->count_records_select('elediachecklist_check', $sql, $iparams);
+                        $tickeditems = $DB->count_records_select($tab, $sql, $iparams);
                         $percentcomplete = ($tickeditems * 100) / $totalitems;
                     } else {
                         $percentcomplete = 0;
@@ -2370,9 +2380,12 @@ class checklist_class {
 
                     $row[] = $userlink.$vslink;
 
+                    $tab1 = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+                    $tab2 = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+
                     $sql = 'SELECT i.id, i.itemoptional, i.hidden, c.usertimestamp, c.teachermark
-                              FROM {elediachecklist_item} i
-                         LEFT JOIN {elediachecklist_check} c ';
+                              FROM {'.$tab1.'} i
+                         LEFT JOIN {'.$tab2.'} c ';
                     $sql .= 'ON (i.id = c.item AND c.userid = ? ) WHERE i.checklist = ? AND i.userid=0 ORDER BY i.position';
                     $checks = $DB->get_records_sql($sql, array($auser->id, $this->checklist->id));
 
@@ -3114,13 +3127,14 @@ class checklist_class {
     protected function clear_orphaned_events() {
         global $DB, $CFG;
         require_once($CFG->dirroot.'/calendar/lib.php');
+        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
         $sql = "
             SELECT e.id
               FROM {event} e
              WHERE e.modulename = 'checklist' AND e.instance = :checklistid
                AND NOT EXISTS (
                    SELECT 1
-                     FROM {elediachecklist_item} i
+                     FROM {".$tab."} i
                     WHERE i.checklist = e.instance AND i.eventid = e.id
                )
         ";
@@ -3253,7 +3267,9 @@ class checklist_class {
         }
 
         $item->delete();
-        $DB->delete_records('elediachecklist_check', array('item' => $itemid));
+
+        $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+        $DB->delete_records($tab, array('item' => $itemid));
 
         $this->update_item_positions();
     }
@@ -3571,9 +3587,10 @@ class checklist_class {
             $this->checklist->teacheredit == CHECKLIST_MARKING_TEACHER
         ) {
             // Checklist is auto updating + only showing teacher marks => disable teacher marks for items that auto update.
+            $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
             $select = "checklist = ? AND userid = 0 AND
                           ((moduleid IS NOT NULL AND moduleid > 0) OR (linkcourseid IS NOT NULL AND linkcourseid > 0))";
-            $autoitems = $DB->get_records_select('elediachecklist_item', $select, [$this->checklist->id]);
+            $autoitems = $DB->get_records_select($tab, $select, [$this->checklist->id]);
             foreach ($autoitems as $autoitem) {
                 if ($autoitem->moduleid) {
                     $disableitems[] = $autoitem->id;
@@ -3636,7 +3653,8 @@ class checklist_class {
             $newcomment = trim($newcomment);
             if ($newcomment == '') {
                 if (array_key_exists($itemid, $comments)) {
-                    $DB->delete_records('elediachecklist_comment', array('id' => $comments[$itemid]->id));
+                    $tab = elediachecklist_tab('eledia_adminexamdates_cmt'); // elediachecklist__comment
+                    $DB->delete_records($tab, array('id' => $comments[$itemid]->id));
                     unset($comments[$itemid]); // Should never be needed, but just in case...
                 }
             } else {
@@ -3649,7 +3667,8 @@ class checklist_class {
                         $updatecomment->commentby = $USER->id;
                         $updatecomment->text = $newcomment;
 
-                        $DB->update_record('elediachecklist_comment', $updatecomment);
+                        $tab = elediachecklist_tab('eledia_adminexamdates_cmt'); // elediachecklist__comment
+                        $DB->update_record($tab, $updatecomment);
                     }
                 } else {
                     $addcomment = new stdClass;
@@ -3826,8 +3845,9 @@ class checklist_class {
         // Update all checklist items that are linked to course modules.
         if ($updmodules) {
             // Get a list of all the checklist items with a module linked to them (ignoring headings).
+            $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
             $sql = "SELECT cm.id AS cmid, m.name AS mod_name, i.id AS itemid, cm.completion AS completion
-        FROM {modules} m, {course_modules} cm, {elediachecklist_item} i
+        FROM {modules} m, {course_modules} cm, {".$tab."} i
         WHERE m.id = cm.module AND cm.id = i.moduleid AND i.moduleid > 0 AND i.checklist = ? AND i.itemoptional != 2";
 
             $completion = new completion_info($this->course);
@@ -3885,8 +3905,9 @@ class checklist_class {
 
         // Update all checklist items that are linked to courses.
         if ($updcourses && $this->can_link_courses()) {
+            $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
             $sql = "SELECT i.id, i.linkcourseid
-                      FROM {elediachecklist_item} i
+                      FROM {".$tab."} i
                       JOIN {course} c ON c.id = i.linkcourseid
                      WHERE i.checklist = :checklistid AND i.itemoptional <> :heading AND c.enablecompletion = 1";
             $params = ['checklistid' => $this->checklist->id, 'heading' => CHECKLIST_OPTIONAL_HEADING];
@@ -4065,9 +4086,10 @@ class checklist_class {
             return array(false, false);
         }
         $groupingsql = self::get_grouping_sql($userid, $checklist->course);
+        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
         $select = "checklist = ? AND userid = 0 AND itemoptional = ".CHECKLIST_OPTIONAL_NO."
                       AND hidden = ".CHECKLIST_HIDDEN_NO." AND $groupingsql";
-        $items = $DB->get_records_select('elediachecklist_item', $select, array($checklist->id), '', 'id');
+        $items = $DB->get_records_select($tab, $select, array($checklist->id), '', 'id');
         if (empty($items)) {
             return array(false, false);
         }
@@ -4081,7 +4103,9 @@ class checklist_class {
         } else {
             $sql .= 'teachermark = '.CHECKLIST_TEACHERMARK_YES;
         }
-        $ticked = $DB->count_records_select('elediachecklist_check', $sql, $params);
+
+        $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+        $ticked = $DB->count_records_select($tab, $sql, $params);
 
         return array($ticked, $total);
     }
@@ -4127,7 +4151,8 @@ class checklist_class {
         }
         if ($strictness == MUST_EXIST) {
             // OK - not actually failed to get the record, but if we've not found it then it is missing in the DB.
-            throw new dml_missing_record_exception('elediachecklist_item', 'displayname = ?', array($itemname));
+            $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+            throw new dml_missing_record_exception($tab, 'displayname = ?', array($itemname));
         }
         return null;
     }
@@ -4187,12 +4212,12 @@ class checklist_class {
  * Nur ausgewaehlte Eintraege werden im PDF angezeigt.
  * 9 von 17 (eigentlich vorhandenen)
  * </pre>
- * @param int $elediachecklist_item_id
+ * @param int $elediachecklistitemid
  * @return string
  */
-function txt_of_id($elediachecklist_item_id) {
+function txt_of_id($elediachecklistitemid) {
 
-    switch($elediachecklist_item_id) {
+    switch($elediachecklistitemid) {
 
         // 01 = (C ->  3) Beschreibung der Prüfungskonfiguration
         case 3:
@@ -4247,6 +4272,10 @@ function txt_of_id($elediachecklist_item_id) {
     return $txt;
 }
 
+//
+// Holidays.
+//
+
 /**
  *
  */
@@ -4267,7 +4296,8 @@ function elediachecklist_get_weekday_number($time) {
 }
 
 /**
- *
+ * @param int $time
+ * @return string
  */
 function elediachecklist_get_weekday_name($time) {
 
@@ -4404,6 +4434,7 @@ function elediachecklist_get_holidays($mode='all', $fromyear=null, $toyear=null)
 
         $holidays = get_config('block_eledia_adminexamdates', 'holidays');
         if (trim($holidays) == '') {
+            // Fallback
             // https://kassel.elearning-home.de/admin/settings.php?section=blocksettingeledia_adminexamdates //.
             // 2023-01-31 //.
             $str = '';
@@ -4431,7 +4462,7 @@ function elediachecklist_get_holidays($mode='all', $fromyear=null, $toyear=null)
         }
 
         $holidays = str_replace("\r\n", "\n", $holidays);
-        $holidays = str_replace("\r", "\n", $holidays);
+        $holidays = str_replace("\r", "", $holidays);
 
         //echo '<pre>holidays - '.print_r($holidays, true).'</pre>';
 
@@ -4600,3 +4631,63 @@ function elediachecklist_date_to_timestamp($date) {
 
     return $tp;
 }
+
+//
+//
+//
+
+/**
+ * Temporary, later to table 'admineexamdates'
+ * @param int $examid
+ * @param string $comment
+ * @return bool
+ */
+function elediachecklist_endabnahme_write_comment($examid, $comment) {
+
+    global $CFG;
+
+    $dir = $CFG->dataroot.'/elediachecklist';
+    if(!is_dir($dir)) {
+        mkdir($dir);
+        chmod($dir, 0775);
+    }
+    $file = $dir.'/examid_'.$examid.'.txt';
+    if(!is_file($file)) {
+        touch($file);
+        chmod($file, 0775);
+    }
+
+    $comment = trim($comment);
+    $comment = str_replace("\r\n", "\n", $comment);
+    $comment = str_replace("\r", "", $comment);
+
+    $bytesorfalse = file_put_contents($file, $comment);
+
+    return true;
+ }
+
+/**
+ * Temporary, later from table 'admineexamdates'
+ * @param int $examid
+ * @return string
+ */
+function elediachecklist_endabnahme_read_comment($examid) {
+
+    global $CFG;
+
+    $dir = $CFG->dataroot.'/elediachecklist';
+    if(!is_dir($dir)) {
+        mkdir($dir);
+        chmod($dir, 0775);
+    }
+    $file = $dir.'/examid_'.$examid.'.txt';
+    if(!is_file($file)) {
+        touch($file);
+        chmod($file, 0775);
+    }
+
+    $comment = file_get_contents($file);
+
+    return $comment;
+}
+

@@ -36,7 +36,8 @@ class myPDF extends TCPDF {
 /*
 2022-08-26, ng
                                                     SIEHE: install.php
-PDF (ist, 17 Punkte)                                {elediachecklist_item}.id
+PDF (ist, 17 Punkte)                                {elediachecklist__item}.id
+                                                    {eledia__adminexamdates_itm}
 --------------------                                -------------------------
 A Ersteller: innenzugriff vorhanden                  1
 B Bereitstellung der Termincheckliste                2
@@ -71,12 +72,12 @@ PDF (soll, 9 Punkte)
 */
 
 /**
- * @param int $elediachecklist_item_id
+ * @param int $elediachecklistitemid, eledia__adminexamdates_itm.id
  * @return string
  */
-function text_of_id($elediachecklist_item_id) {
+function text_of_id($elediachecklistitemid) {
 
-    switch($elediachecklist_item_id) {
+    switch($elediachecklistitemid) {
 
         // 01 = (C ->  3) Beschreibung der Prüfungskonfiguration
         case 3:
@@ -134,8 +135,11 @@ function text_of_id($elediachecklist_item_id) {
 
 $examid = optional_param('examid', 0, PARAM_INT);
 
-$examTopics = $DB->get_records("elediachecklist_item");
-$checkedTopics = $DB->get_records("elediachecklist_check", ['teacherid' => $examid]);
+$tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+$examTopics = $DB->get_records($tab);
+
+$tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+$checkedTopics = $DB->get_records($tab, ['teacherid' => $examid]);
 //echo '<pre>'.print_r($examTopics, true).'</pre>'; die();
 //echo '<pre>'.print_r($checkedTopics, true).'</pre>'; //die();
 
@@ -302,6 +306,7 @@ foreach ($examTopics as &$topic) {
         if ($checked->item == $topic->id)
             $isChecked = "X";
     }
+    //echo 'isChecked = '.$isChecked.'<br />';
 
     $second = $txt_of_id;
     //$second = iconv('UTF-8', 'windows-1252', $second);
@@ -309,20 +314,23 @@ foreach ($examTopics as &$topic) {
     $third = '-';
     if($examid > 0) {
         if ($topic->displaytext == "Endabnahme") {
-            $eaDate = $DB->get_record("elediachecklist_item_date", ['examid' => $examid]);
+
+            $tab = elediachecklist_tab('eledia_adminexamdates_itm_d'); // elediachecklist__item_date
+            $eaDate = $DB->get_record($tab, ['examid' => $examid]);
+
             if (isset($eaDate->checkdate)) {
                 $date = date("d.m.Y", $eaDate->checkdate);
                 // Holiday to this day? //.
                 $isholiday = false;
 
                 // ERLEDIGT & AUSKOMMENTIERT
-                //$mixed = elediachecklist_is_holiday($date);
-                //if(is_array($mixed)) {
-                //    $isholiday = true;
-                //    // Next workday //.
-                //    $date = elediachecklist_get_next_workday_after_holiday($date);
-                //    $date = '<i>'.$date.'</i>';
-                //}
+                $mixed = elediachecklist_is_holiday($date);
+                if(is_array($mixed)) {
+                    $isholiday = true;
+                    // Next workday //.
+                    $date = elediachecklist_get_next_workday_after_holiday($date);
+                    //$date = '<i>'.$date.'</i>';
+                }
 
                 $third = $date;
             }
@@ -333,13 +341,13 @@ foreach ($examTopics as &$topic) {
                 $isholiday = false;
 
                 // ERLEDIGT & AUSKOMMENTIERT
-                //$mixed = elediachecklist_is_holiday($date);
-                //if(is_array($mixed)) {
-                //    $isholiday = true;
-                //    // Next workday //.
-                //    $date = elediachecklist_get_next_workday_after_holiday($date);
-                //    $date = '<i>'.$date.'</i>';
-                //}
+                $mixed = elediachecklist_is_holiday($date);
+                if(is_array($mixed)) {
+                    $isholiday = true;
+                    // Next workday //.
+                    $date = elediachecklist_get_next_workday_after_holiday($date);
+                    //$date = '<i>'.$date.'</i>';
+                }
 
                 $third = $date;
             }

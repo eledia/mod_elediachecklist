@@ -37,7 +37,8 @@ $topicId = optional_param('topicId', -1, PARAM_INT);
 
 if ($topicId == -1) {
 
-    $sql = "SELECT * FROM {elediachecklist_item}";
+    $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+    $sql = "SELECT * FROM {".$tab."}";
     $res = $DB->get_records_sql($sql);
     $newid = 0;
     $newposition = 0;
@@ -57,13 +58,15 @@ if ($topicId == -1) {
     //echo 'newposition = '.$newposition.'<br />';
     // die();
 
-    $sql  = "INSERT INTO {elediachecklist_item} ";
+    $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+    $sql  = "INSERT INTO {".$tab."} ";
     $sql .= "(id, checklist, displaytext, position, duetime, emailtext) ";
     $sql .= "VALUES ";
     $sql .= "(" . $newid . ", " . $checklistId . ", '" . $topicName . "', ".$newposition.", '" . $topicDate . "', '" . $topictextmail . "')";
     $DB->execute($sql);
 } else {
-    $DB->execute("UPDATE {elediachecklist_item} SET displaytext = ?, duetime = ?, emailtext = ? WHERE id = ?",[$topicName, $topicDate, $topictextmail, $topicId]);
+    $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+    $DB->execute("UPDATE {".$tab."} SET displaytext = ?, duetime = ?, emailtext = ? WHERE id = ?",[$topicName, $topicDate, $topictextmail, $topicId]);
 }
 
 echo "Topic added/updated";

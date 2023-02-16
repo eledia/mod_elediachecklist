@@ -310,12 +310,12 @@ function elediachecklist_delete_instance($id) {
 
     // Do not execute! Dangerous for $checklist->id = 1 !
     // $checklist->id = 1 should be the only one!
-    //$items = $DB->get_records('elediachecklist_item', array('checklist' => $checklist->id), '', 'id');
+    //$items = $DB->get_records('elediachecklist#item', array('checklist' => $checklist->id), '', 'id');
     //if (!empty($items)) {
     //    $items = array_keys($items);
-    //    $DB->delete_records_list('elediachecklist_check', 'item', $items);
-    //    $DB->delete_records_list('elediachecklist_comment', 'itemid', $items);
-    //    $DB->delete_records('elediachecklist_item', array('checklist' => $checklist->id));
+    //    $DB->delete_records_list('elediachecklist#check', 'item', $items);
+    //    $DB->delete_records_list('elediachecklist#comment', 'itemid', $items);
+    //    $DB->delete_records('elediachecklist#item', array('checklist' => $checklist->id));
     //}
     $DB->delete_records('elediachecklist', array('id' => $checklist->id));
 
@@ -421,8 +421,9 @@ function elediachecklist_update_grades($checklist, $userid = 0) {
                 $ugrade->date = time();
 
             } else {
+                $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
                 $sql = 'SELECT (SUM(CASE WHEN '.$where.' THEN 1 ELSE 0 END) * ? / ? ) AS rawgrade'.$date;
-                $sql .= " FROM {elediachecklist_check} c ";
+                $sql .= " FROM {".$tab."} c ";
                 $sql .= " WHERE c.item IN ($itemlist)";
                 $sql .= ' AND c.userid = ? ';
 
@@ -474,11 +475,12 @@ function elediachecklist_update_grades($checklist, $userid = 0) {
             ];
         }
 
+        $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
         $sql = "
              SELECT u.id AS userid, (SUM(CASE WHEN $where THEN 1 ELSE 0 END) * :maxgrade / :total ) AS rawgrade $date
                     {$namesql->selects}
                FROM {user} u
-          LEFT JOIN {elediachecklist_check} c ON u.id = c.userid
+          LEFT JOIN {".$tab."} c ON u.id = c.userid
                     {$namesql->joins}
               WHERE u.id $usql
                 AND c.item $isql
@@ -647,14 +649,16 @@ function elediachecklist_grade_item_update($checklist, $grades = null) {
  * @return null
  */
 function elediachecklist_user_outline($course, $user, $mod, $checklist) {
+
     global $DB;
 
     // Handle groupings.
     $groupingsql = checklist_class::get_grouping_sql($user->id, $checklist->course);
 
-    $sel = 'checklist = ? AND userid = 0 AND itemoptional = '.CHECKLIST_OPTIONAL_NO;
+    $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+    $sel  = 'checklist = ? AND userid = 0 AND itemoptional = '.CHECKLIST_OPTIONAL_NO;
     $sel .= ' AND hidden = '.CHECKLIST_HIDDEN_NO." AND $groupingsql";
-    $items = $DB->get_records_select('elediachecklist_item', $sel, array($checklist->id), '', 'id');
+    $items = $DB->get_records_select($tab, $sel, array($checklist->id), '', 'id');
     if (!$items) {
         return null;
     }
@@ -672,7 +676,8 @@ function elediachecklist_user_outline($course, $user, $mod, $checklist) {
     }
     $params = array_merge(array($user->id), $iparams);
 
-    $checks = $DB->get_records_select('elediachecklist_check', $sql, $params, $order);
+    $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+    $checks = $DB->get_records_select($tab, $sql, $params, $order);
 
     $return = null;
     if ($checks) {
@@ -778,14 +783,17 @@ function elediachecklist_print_overview($courses, &$htmlarray) {
 
         if ($showall) { // Show all items whether or not they are checked off (as this user is unable to check them off).
             $groupingsql = checklist_class::get_grouping_sql($USER->id, $checklist->course);
-            $dateitems = $DB->get_records_select('elediachecklist_item',
+            $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+            $dateitems = $DB->get_records_select($tab,
                                                  "checklist = ? AND duetime > 0 AND $groupingsql",
                                                  array($checklist->id),
                                                  'duetime');
         } else { // Show only items that have not been checked off.
             $groupingsql = checklist_class::get_grouping_sql($USER->id, $checklist->course, 'i.');
-            $dateitems = $DB->get_records_sql("SELECT i.* FROM {elediachecklist_item} i
-                                                 JOIN {elediachecklist_check} c ON c.item = i.id
+            $tab1 = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+            $tab2 = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+            $dateitems = $DB->get_records_sql("SELECT i.* FROM {".$tab1."} i
+                                                 JOIN {".$tab2."} c ON c.item = i.id
                                                 WHERE i.checklist = ? AND i.duetime > 0 AND c.userid = ? AND usertimestamp = 0
                                                   AND $groupingsql
                                                 ORDER BY i.duetime", array($checklist->id, $USER->id));
@@ -823,19 +831,24 @@ function elediachecklist_print_overview($courses, &$htmlarray) {
  * @return mixed boolean/array of students
  */
 function elediachecklist_get_participants($checklistid) {
+
     global $DB;
 
     $params = array($checklistid);
+
+    $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
     $sql = 'SELECT DISTINCT u.id
               FROM {user} u
-              JOIN {elediachecklist_item} i ON i.userid = u.id
+              JOIN {".$tab."} i ON i.userid = u.id
              WHERE i.checklist = ?';
     $userids1 = $DB->get_records_sql($sql, $params);
 
+    $tab1 = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+    $tab2 = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
     $sql = 'SELECT DISTINCT u.id
               FROM {user} u
-              JOIN {elediachecklist_check} c ON c.userid = u.id
-              JOIN {elediachecklist_item} i ON i.id = c.item
+              JOIN {".$tab1."} c ON c.userid = u.id
+              JOIN {".$tab2."} i ON i.id = c.item
              WHERE i.checklist = ?';
     $userids2 = $DB->get_records_sql($sql, $params);
 
@@ -926,17 +939,23 @@ function elediachecklist_reset_userdata($data) {
         }
 
         [$csql, $cparams] = $DB->get_in_or_equal(array_keys($checklists));
-        $items = $DB->get_records_select('elediachecklist_item', 'checklist '.$csql, $cparams);
+        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+        $items = $DB->get_records_select($tab, 'checklist '.$csql, $cparams);
         if (!$items) {
             return $status;
         }
 
         $itemids = array_keys($items);
-        $DB->delete_records_list('elediachecklist_check', 'item', $itemids);
-        $DB->delete_records_list('elediachecklist_comment', 'itemid', $itemids);
 
+        $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+        $DB->delete_records_list($tab, 'item', $itemids);
+
+        $tab = elediachecklist_tab('eledia_adminexamdates_cmt'); // elediachecklist__comment
+        $DB->delete_records_list($tab, 'itemid', $itemids);
+
+        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
         $sql = "checklist $csql AND userid <> 0";
-        $DB->delete_records_select('elediachecklist_item', $sql, $cparams);
+        $DB->delete_records_select($tab, $sql, $cparams);
 
         // Reset the grades.
         foreach ($checklists as $checklist) {
@@ -1085,4 +1104,75 @@ function elediachecklist_get_coursemodule_info($coursemodule) {
     }
 
     return $result;
+}
+
+/**
+ *
+ */
+
+// SQL-Tabellen im Vergleich
+// -------------------------
+// elediachecklist           - checklist
+// elediachecklist__item      - checklist_item
+// elediachecklist__check     - checklist_check
+// elediachecklist__comment   - checklist_comment
+//                           - checklist_comment_student
+//                           - checklist_comp_notification
+// elediachecklist__item_date -
+// elediachecklist__my_check  -
+// elediachecklist__my_item   -
+
+
+function elediachecklist_tab($name) {
+
+    //$gettype = 'old';
+    $gettype = 'new';
+    // 'old' -> Funktioniert auch noch mit den alten Tabellen - ACHTUNG: Dann keine Installation vornehmen!
+    // 'new' -> Kann erst installiert werden, wenn, Rene sein Plugin fertig hat.
+
+    $names = array(
+        // old name                 =>  new name
+            'elediachecklist_check'     => 'eledia_adminexamdates_chk',    //
+            'elediachecklist_comment'   => 'eledia_adminexamdates_cmt',    //
+            'elediachecklist_item'      => 'eledia_adminexamdates_itm',    //
+            'elediachecklist_item_date' => 'eledia_adminexamdates_itm_d',  //
+            'elediachecklist_my_check'  => 'eledia_adminexamdates_my_chk', //
+            'elediachecklist_my_item'   => 'eledia_adminexamdates_my_itm', //
+    );
+    $oldnames = array_keys($names);
+    $newnames = array_values($names);
+
+    $ret = $name;
+    // Alter Namen gewuenscht
+    if($gettype == 'old') {
+        // Alten Namen uebergeben - bleibt
+        if(in_array($name, $oldnames)) {
+            $ret = $name;
+        }
+        // Neuen Namen uebergeben - konvertieren
+        else {
+            $flip = array_flip($names);
+            //echo '<pre>'.print_r($flip, true).'</pre>';
+            if(isset($flip[$name])) {
+                $ret = $flip[$name];
+            }
+        }
+    }
+    // Neuer Namen gewuenscht
+    else if($gettype == 'new') {
+        // Neuen Namen uebergeben - bleibt
+        if(in_array($name, $newnames)) {
+            $ret = $name;
+        }
+        // Alten Namen uebergeben - konvertieren
+        else {
+            if(isset($names[$name])) {
+                $ret = $names[$name];
+            }
+        }
+    }
+
+    //echo 'ret = '.$ret.'<br />'."\n"; //die();
+
+    return $ret;
 }

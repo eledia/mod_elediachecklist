@@ -32,13 +32,17 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot.'/completion/data_object.php');
 
+$tab = elediachecklist_tab('eledia_adminexamdates_cmt'); // elediachecklist__comment
+define('ELEDIACHECKLIST_CHECKLIST_COMMENT_TABLE', $tab);
+
+
 /**
  * Class checklist_comment
  * @package mod_elediachecklist
  */
 class checklist_comment extends data_object {
     /** @var string */
-    public $table = 'elediachecklist_comment';
+    public $table = ELEDIACHECKLIST_CHECKLIST_COMMENT_TABLE; // 'elediachecklist_comment'
     /** @var string[] */
     public $requiredfields = [
         'id', 'itemid', 'userid', 'commentby', 'text'
@@ -79,7 +83,8 @@ class checklist_comment extends data_object {
      * @return data_object|false|object
      */
     public static function fetch($params) {
-        return self::fetch_helper('elediachecklist_comment', __CLASS__, $params);
+        $tab = elediachecklist_tab('eledia_adminexamdates_cmt'); // elediachecklist__comment
+        return self::fetch_helper($tab, __CLASS__, $params);
     }
 
     /**
@@ -89,7 +94,8 @@ class checklist_comment extends data_object {
      * @return array|false|mixed
      */
     public static function fetch_all($params, $sort = false) {
-        $ret = self::fetch_all_helper('elediachecklist_comment', __CLASS__, $params);
+        $tab = elediachecklist_tab('eledia_adminexamdates_cmt'); // elediachecklist__comment
+        $ret = self::fetch_all_helper($tab, __CLASS__, $params);
         if (!$ret) {
             $ret = [];
         }
@@ -112,7 +118,8 @@ class checklist_comment extends data_object {
 
         list($isql, $params) = $DB->get_in_or_equal($itemids, SQL_PARAMS_NAMED);
         $params['userid'] = $userid;
-        $comments = $DB->get_records_select('elediachecklist_comment', "userid = :userid AND itemid $isql", $params);
+        $tab = elediachecklist_tab('eledia_adminexamdates_cmt'); // elediachecklist__comment
+        $comments = $DB->get_records_select($tab, "userid = :userid AND itemid $isql", $params);
         foreach ($comments as $comment) {
             $ret[$comment->itemid] = new checklist_comment();
             self::set_properties($ret[$comment->itemid], $comment);

@@ -32,13 +32,17 @@ global $CFG;
 require_once($CFG->dirroot.'/completion/data_object.php');
 require_once($CFG->dirroot.'/mod/elediachecklist/lib.php');
 
+$tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+define('ELEDIACHECKLIST_CHECKLIST_ITEM_TABLE', $tab);
+
+
 /**
  * Class checklist_item
  * @package mod_elediachecklist
  */
 class checklist_item extends data_object {
     /** @var string */
-    public $table = 'elediachecklist_item';
+    public $table = ELEDIACHECKLIST_CHECKLIST_ITEM_TABLE; // 'elediachecklist__item';
     /** @var string[] */
     public $requiredfields = [
         'id', 'checklist', 'userid', 'displaytext', 'position', 'indent', 'itemoptional', 'duetime',
@@ -124,7 +128,8 @@ class checklist_item extends data_object {
      * @return data_object|false|object
      */
     public static function fetch($params) {
-        return self::fetch_helper('elediachecklist_item', __CLASS__, $params);
+        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+        return self::fetch_helper($tab, __CLASS__, $params);
     }
 
     /**
@@ -134,7 +139,8 @@ class checklist_item extends data_object {
      * @return array|false|mixed
      */
     public static function fetch_all($params, $sort = false) {
-        $ret = self::fetch_all_helper('elediachecklist_item', __CLASS__, $params);
+        $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+        $ret = self::fetch_all_helper($tab, __CLASS__, $params);
         if (!$ret) {
             $ret = [];
         }
@@ -383,7 +389,8 @@ class checklist_item extends data_object {
      */
     public function clear_all_student_checks() {
         global $DB;
-        $DB->set_field_select('elediachecklist_check', 'usertimestamp', 0, 'item = ? AND usertimestamp > 0', [$this->id]);
+        $tab = elediachecklist_tab('eledia_adminexamdates_chk'); // elediachecklist__check
+        $DB->set_field_select($tab, 'usertimestamp', 0, 'item = ? AND usertimestamp > 0', [$this->id]);
     }
 
     /**

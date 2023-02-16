@@ -39,7 +39,8 @@ require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/elediachecklist:edit', $context);
 
-$items = $DB->get_records_select('elediachecklist_item', "checklist = ? AND userid = 0", array($checklist->id), 'position');
+$tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+$items = $DB->get_records_select($tab, "checklist = ? AND userid = 0", array($checklist->id), 'position');
 if (!$items) {
     throw new moodle_exception('noitems', 'mod_elediachecklist');
 }

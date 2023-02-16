@@ -187,28 +187,32 @@ class export_pdf extends FPDF {
 }
 
 
+$examid = optional_param('examid', 0, PARAM_INT);
+$type = optional_param('type', '', PARAM_TEXT);
+
+
 if (isset($_REQUEST['commentsEA']) ) {
     $cookie_name = "commentsEA";
     $cookie_value = $_REQUEST["commentsEA"];
-    //setcookie($cookie_name, base64_encode($cookie_value), time() + (86400 * 30), "/"); // 86400 = 1 day
+    $comment = $_REQUEST["commentsEA"];
+    elediachecklist_endabnahme_write_comment($examid, $comment);
 }
 
 
-    $examid = optional_param('examid', 0, PARAM_INT);
-    $type = optional_param('type', '', PARAM_TEXT);
-
-    // ACHTUNG: {elediachecklist_my_check} hat aus irgendwelchen Gruenden(!) manchmal dieselben Eintraege,
+    // ACHTUNG: {elediachecklist__my_check} hat aus irgendwelchen Gruenden(!) manchmal dieselben Eintraege,
     // so dass der 'LEFT JOIN nicht immer funktioniert'.
     // Moodle beschwert sich:
     // Did you remember to make the first column something unique in your call to get_records? Duplicate value '49' found in column 'id'.
     // Erste Massnahme: Alle Checkboxen deaktivieren/aktivieren, 2022-09-23, ngeiges
+    $tab1 = elediachecklist_tab('eledia_adminexamdates_my_itm'); // elediachecklist__my_item
+    $tab2 = elediachecklist_tab('eledia_adminexamdates_my_chk'); // elediachecklist__my_check
     $sql  = "SELECT ";
     $sql .= "myitem.id, ";
     $sql .= "CASE  WHEN mycheck.id_item IS NOT NULL THEN 'OK' ELSE '' END AS ischecked, ";
     $sql .= "myitem.displaytext AS displaytext, ";
     $sql .= "myitem.is_checkbox AS is_checkbox ";
-    $sql .= "FROM mdl_elediachecklist_my_item AS myitem ";
-    $sql .= "LEFT JOIN mdl_elediachecklist_my_check AS mycheck ON (mycheck.id_item = myitem.id AND mycheck.id_exam=" . $examid .") ";
+    $sql .= "FROM {".$tab1."} AS myitem ";
+    $sql .= "LEFT JOIN {".$tab2."} AS mycheck ON (mycheck.id_item = myitem.id AND mycheck.id_exam=" . $examid .") ";
     $sql .= "WHERE myitem.type='" . $type . "' ";
     $sql .= "ORDER BY myitem.id ";
     $result = $DB->get_records_sql($sql);
@@ -282,7 +286,8 @@ if (isset($_REQUEST['commentsEA']) ) {
     $examdate = date('r', $myrow[2]);
     //Get Topic Klausur
     // $klausurrow -> $klausurrow[0]
-    $sql = "SELECT id, duetime from mdl_elediachecklist_item where id = 18";
+    $tab = elediachecklist_tab('eledia_adminexamdates_itm'); // elediachecklist__item
+    $sql = "SELECT id, duetime from {".$tab."} where id = 18";
     $res = $DB->get_records_sql($sql);
     $klausurrow = array(0 => '');
     if(isset($res)  &&  count($res) == 1) {
