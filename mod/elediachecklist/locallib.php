@@ -1800,7 +1800,11 @@ class checklist_class {
         $row[] = new tabobject('tabtermin', new moodle_url('/mod/elediachecklist/tabtermin.php', array('id' => $this->cm->id, 'examid' => $this->myExamId)), 'Termincheckliste');
         $row[] = new tabobject('tabqualitats', new moodle_url('/mod/elediachecklist/tabqualitats.php', array('id' => $this->cm->id, 'examid' => $this->myExamId)), 'Qualitätsmanagement');
         $row[] = new tabobject('tabendabnahme', new moodle_url('/mod/elediachecklist/tabendabnahme.php', array('id' => $this->cm->id, 'examid' => $this->myExamId)), 'Endabnahme');
-        $row[] = new tabobject('tabeinzeltermine', new moodle_url('/mod/elediachecklist/tabeinzeltermine.php', array('id' => $this->cm->id, 'examid' => $this->myExamId)), 'Einzeltermine');
+
+        // Soll nicht mehr angezeigt werden //.
+        // 2023022802000773                 //.
+        //$row[] = new tabobject('tabeinzeltermine', new moodle_url('/mod/elediachecklist/tabeinzeltermine.php', array('id' => $this->cm->id, 'examid' => $this->myExamId)), 'Einzeltermine');
+
         $row[] = new tabobject('tabprobleme', new moodle_url('/mod/elediachecklist/tabprobleme.php', array('id' => $this->cm->id, 'examid' => $this->myExamId)), 'Probleme');
 
         if (count($row) > 1) { // No tabs for students.
