@@ -4648,8 +4648,23 @@ function elediachecklist_date_to_timestamp($date) {
  */
 function elediachecklist_endabnahme_write_comment($examid, $comment) {
 
-    global $CFG;
+    global $CFG, $DB;
 
+    $obj = $DB->get_record('eledia_adminexamdates', array('id' => $examid));
+    if($obj) {
+        $comment = trim($comment);
+        $comment = str_replace("\r\n", "\n", $comment);
+        $comment = str_replace("\r", "", $comment);
+        $obj->checklistcomment = $comment;
+        $DB->update_record('eledia_adminexamdates', $obj);
+        return true;
+    }
+    else {
+        return false;
+    }
+
+    // OLD
+    /*
     $dir = $CFG->dataroot.'/elediachecklist';
     if(!is_dir($dir)) {
         mkdir($dir);
@@ -4668,6 +4683,7 @@ function elediachecklist_endabnahme_write_comment($examid, $comment) {
     $bytesorfalse = file_put_contents($file, $comment);
 
     return true;
+    */
  }
 
 /**
@@ -4677,8 +4693,19 @@ function elediachecklist_endabnahme_write_comment($examid, $comment) {
  */
 function elediachecklist_endabnahme_read_comment($examid) {
 
-    global $CFG;
+    global $CFG, $DB;
 
+    $obj = $DB->get_record('eledia_adminexamdates', array('id' => $examid));
+    if($obj) {
+        $comment = $obj->checklistcomment;
+        return $comment;
+    }
+    else {
+        return '';
+    }
+
+    // OLD
+    /*
     $dir = $CFG->dataroot.'/elediachecklist';
     if(!is_dir($dir)) {
         mkdir($dir);
@@ -4693,5 +4720,6 @@ function elediachecklist_endabnahme_read_comment($examid) {
     $comment = file_get_contents($file);
 
     return $comment;
+    */
 }
 
