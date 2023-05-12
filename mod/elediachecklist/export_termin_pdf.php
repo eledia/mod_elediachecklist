@@ -203,9 +203,6 @@ foreach($result as $one) {
     $properties['duration']       = date('H:i', $one->examtimestart).' - '.date('H:i', ($one->examtimestart + ($one->examduration*60)));
 }
 
-//echo '<pre>'.print_r($properties, true).'</pre>'; die();
-//echo '<pre>'.print_r($result, true).'</pre>'; //die();
-
 //============================================================================
 
 // create new PDF document
@@ -240,6 +237,10 @@ $pdf->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=true, $align=
 
 $pdf->SetFont('helvetica', '', 11);
 
+//
+//
+//
+
 $html  = '';
 $html.= '<table border="1" cellpadding="0" cellspacing="0"><tr><td>';
 $html .= '<table border="0" cellpadding="4" cellspacing="0" width="100%">';
@@ -258,23 +259,40 @@ $pdf->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=true, $align=
 $html  = '';
 $html .= '<table border="0" cellpadding="2" cellspacing="0" width="100%">';
 $html .= '<tr>';
-$html .= '<td align="left" width="25%">'.get_string('klausurtermin', 'elediachecklist').':</td>';
-$html .= '<td align="left" width="30%">'.$properties['examtimestart'].'</td>';
-$html .= '<td align="left" width="30%">'.get_string('erwartetet_anzahl_prueflinge', 'elediachecklist').':</td>';
-$html .= '<td align="left" width="15%">'.$properties['numberstudents'].'</td>';
-//$html .= '<td align="left" width="10%">&nbsp;</td>';
+$html .= '<td align="left" width="28%">'.get_string('name_scl_betreuer', 'elediachecklist').':</td>';
+$html .= '<td align="left" width="72%">'.$properties['scl_name'].'</td>';
 $html .= '</tr>';
 $html .= '<tr>';
-$html .= '<td align="left" width="25%">'.get_string('name_scl_betreuer', 'elediachecklist').':</td>';
-$html .= '<td align="left" width="30%">'.$properties['scl_name'].'</td>';
-$html .= '<td align="left" width="30%">'.get_string('zeitraum_der_raumbuchung', 'elediachecklist').':</td>';
-$html .= '<td align="left" width="15%">'.$properties['duration'].'</td>';
-//$html .= '<td align="left" width="10%">&nbsp;</td>';
+$html .= '<td align="left" width="28%">'.get_string('erwartetet_anzahl_prueflinge', 'elediachecklist').':</td>';
+$html .= '<td align="left" width="72%">'.$properties['numberstudents'].'</td>';
 $html .= '</tr>';
 $html .= '</table>';
+$html .= '<br />';
+$pdf->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=true, $align='');
+
+
+$obj = elediachecklist_get_examdates($examid);
+//echo '<pre>'.print_r($obj, true).'</pre>';
+$html  = '';
+if($obj) {
+    $html .= '<table border="0" cellpadding="2" cellspacing="0" width="100%">';
+    foreach ($obj->_dates as $one) {
+        $html .= '<tr>';
+        $html .= '<td align="left" width="20%">' . $one['title_01'] . ':</td>'; // 1. Klausurtermin
+        $html .= '<td align="left" width="20%">' . $one['title_03'] . '</td>';  // 01.04.2023
+        $html .= '<td align="left" width="16%">' . get_string('schreibzeit', 'elediachecklist') . ':</td>';
+        $html .= '<td align="left" width="18%">' . $one['title_04'] . '</td>';  // 12.00 - 13.30 Uhr
+        $html .= '<td align="left" width="26%">&nbsp;</td>';
+        $html .= '</tr>';
+    }
+    $html .= '</table>';
+}
 $html .= '<br /><br /><br />';
 $pdf->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=true, $align='');
 
+//
+//
+//
 
 $html  = get_string('text_pdf_intro', 'elediachecklist');
 $html .= '<br />';

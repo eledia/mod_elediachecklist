@@ -16,7 +16,7 @@
 /**
  * Version information
  *
- * @copyright Norbert Geiges <ng@eledia.de>
+ * @copyright eLeDia GmbH
  * @package mod_elediachecklist
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

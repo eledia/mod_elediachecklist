@@ -1184,13 +1184,6 @@ class checklist_class {
             }
         }
 
-        //$htmlItems = $htmlItems . "<br/><b>Comments</b><br/><textarea rows='5' name='commentsEA' id='commentsEA' style='width: 100%'></textarea> <br/><a href='#' onclick='localStorage.setItem(\"commentsEA" . $this->myExamId . "\", document.getElementById(\"commentsEA\").value); window.open(\"export_pdf.php?examid=" . $this->myExamId . "&type=ea\")'  class='btn btn-success' data-toggle='modal'><i class='material-icons'></i> <span>Export PDF</span></a>";
-        //$htmlItems = $htmlItems . "<br/><b>Comments</b><br/><textarea rows='5' name='commentsEA' id='commentsEA' style='width: 100%'></textarea> <br/><a href='#' onclick='exportPDF_ea(" . $this->myExamId . ", document.getElementById(\"commentsEA\").value)' class='btn btn-success' data-toggle='modal'><i class='material-icons'></i> <span>Export PDF</span></a>";
-        //$htmlItems = $htmlItems . "<br/><b>Comments</b><br/><textarea rows='5' name='commentsEA' id='commentsEA' style='width: 100%'></textarea> <br/><a href='#' onclick='$.post( \"savepdfcomments.php\", {commentsEA : document.getElementById(\"commentsEA\").value}, function( data ) { window.open(\"export_pdf.php?examid=" . $this->myExamId . "&type=ea\")})'  class='btn btn-success' data-toggle='modal'><i class='material-icons'></i> <span>Export PDF</span></a>";
-        //----- ALT
-        //$htmlItems = $htmlItems . "<br/><b>Comments</b><br/><textarea rows='5' name='commentsEA' id='commentsEA' style='width: 100%'></textarea> <br/><a href='#' onclick='$.post( \"export_pdf.php\", {commentsEA : document.getElementById(\"commentsEA\").value}, function( data ) { window.open(\"export_pdf.php?examid=" . $this->myExamId . "&type=ea\")})'  class='btn btn-success' data-toggle='modal'><i class='material-icons'></i> <span>Export PDF</span></a>";
-        //----- NEU
-
         $htmlItems = $htmlItems . "<br/><b>Comments</b><br/>";
 
         $onc  = '';
@@ -4281,7 +4274,8 @@ function txt_of_id($elediachecklistitemid) {
 //
 
 /**
- *
+ * @param int $time
+ * @return string
  */
 function elediachecklist_get_weekday_number($time) {
 
@@ -4326,7 +4320,7 @@ function elediachecklist_get_weekday_name($time) {
 }
 
 /**
- * Verify $date
+ * Verify the stated date
  * @param string $date (format d.m.Y)
  * @return bool
  */
@@ -4351,6 +4345,7 @@ function elediachecklist_is_date($date) {
 }
 
 /**
+ * Is stated date a holiday date?
  * @param string $date (format d.m.Y)
  * @param string $mode ('all', 'holidays', 'weekends')
  * @return mixed FALSE or assoc. array about the holiday
@@ -4394,6 +4389,7 @@ function elediachecklist_is_holiday($date, $mode='all') {
 }
 
 /**
+ * Get all holidays dates.
  * @param string $mode ('all', 'holidays', 'weekends')
  * @param null|int $fromyear
  * @param null|int $toyear
@@ -4558,8 +4554,6 @@ function elediachecklist_get_holidays($mode='all', $fromyear=null, $toyear=null)
                     $tpinp = $tpinp + 1;
                 }
                 $ret[$tpinp] = $retone;
-
-
             }
             // Add a day.
             $tpfrom = $tpfrom + (60 * 60 * 24);
@@ -4582,7 +4576,7 @@ function elediachecklist_get_holidays($mode='all', $fromyear=null, $toyear=null)
 }
 
 /**
- * Get next worday after holiday!
+ * Get next workday after holiday!
  * @param string $date (format: d.m.Y)
  * @param string $mode ('all', 'holidays', 'weekends')
  * @return string (format: d.m.Y)
@@ -4618,8 +4612,9 @@ function elediachecklist_get_next_workday_after_holiday($date, $mode='all') {
 };
 
 /**
+ * Convert a date (Format: 'd.m.Y') to timestamp
  * @param string $date (format: d.m.Y)
- * @return int
+ * @return int Timestamp
  */
 function elediachecklist_date_to_timestamp($date) {
 
@@ -4641,7 +4636,7 @@ function elediachecklist_date_to_timestamp($date) {
 //
 
 /**
- * Temporary, later to table 'admineexamdates'
+ * Write comment
  * @param int $examid
  * @param string $comment
  * @return bool
@@ -4662,32 +4657,10 @@ function elediachecklist_endabnahme_write_comment($examid, $comment) {
     else {
         return false;
     }
-
-    // OLD
-    /*
-    $dir = $CFG->dataroot.'/elediachecklist';
-    if(!is_dir($dir)) {
-        mkdir($dir);
-        chmod($dir, 0775);
-    }
-    $file = $dir.'/examid_'.$examid.'.txt';
-    if(!is_file($file)) {
-        touch($file);
-        chmod($file, 0775);
-    }
-
-    $comment = trim($comment);
-    $comment = str_replace("\r\n", "\n", $comment);
-    $comment = str_replace("\r", "", $comment);
-
-    $bytesorfalse = file_put_contents($file, $comment);
-
-    return true;
-    */
  }
 
 /**
- * Temporary, later from table 'admineexamdates'
+ * Read comment
  * @param int $examid
  * @return string
  */
@@ -4703,23 +4676,73 @@ function elediachecklist_endabnahme_read_comment($examid) {
     else {
         return '';
     }
-
-    // OLD
-    /*
-    $dir = $CFG->dataroot.'/elediachecklist';
-    if(!is_dir($dir)) {
-        mkdir($dir);
-        chmod($dir, 0775);
-    }
-    $file = $dir.'/examid_'.$examid.'.txt';
-    if(!is_file($file)) {
-        touch($file);
-        chmod($file, 0775);
-    }
-
-    $comment = file_get_contents($file);
-
-    return $comment;
-    */
 }
 
+/**
+ * @param int $examid
+ * @return stdClass
+ */
+function elediachecklist_get_examdates($examid) {
+
+    global $DB;
+
+    $exam = $DB->get_record('eledia_adminexamdates', ['id' => $examid]);
+    if(!$exam) {
+        $exam = new stdClass();
+        $exam->_num_dates = 0;
+        $exam->_dates = array();
+        return $exam;
+    }
+
+    $examblocks = $DB->get_records('eledia_adminexamdates_blocks', ['examdateid' => $examid], 'blocktimestart');
+
+    // Start values
+    $numdates = count($examblocks);
+    $dates = array();
+
+    $index = 1;
+    foreach ($examblocks as $examblock) {
+
+        $tpstart = $examblock->blocktimestart;
+        $tpend   = $examblock->blocktimestart + ($examblock->blockduration * 60);
+
+        $title01 = get_string('klausurtermin', 'elediachecklist');
+        if($numdates > 1) {
+            $title01 = $index.'. '.get_string('klausurtermin', 'elediachecklist');
+        }
+
+        $title02 = get_string('partialdate', 'block_eledia_adminexamdates');
+        if($numdates > 1) {
+            $title02 = $index.'. '.get_string('partialdate', 'block_eledia_adminexamdates');
+        }
+
+        $title03  = date('d.m.Y', $tpstart);
+
+        $title04  = date('H.i', $tpstart).' - '.date('H.i', $tpend).' ';
+        $title04 .= trim(get_string('hour', 'block_eledia_adminexamdates'));
+
+        $title05  = date('d.m.Y', $tpstart).', ';
+        $title05 .= date('H.i', $tpstart).' - '.date('H.i', $tpend).' ';
+        $title05 .= trim(get_string('hour', 'block_eledia_adminexamdates'));
+
+        $date = array(
+            'title_01' => $title01,    // Klausurtermin, 1. Klausurtermin, ... //.
+            'title_02' => $title02,    // Teiltermin, 1. Teiltermin, ...       //.
+            'title_03' => $title03,    // 01.04.2023                           //.
+            'title_04' => $title04,    // 12.00 - 13.30 Uhr                    //.
+            'title_05' => $title05,    // 01.04.2023, 12.00 - 13.30 Uhr        //.
+            'tpstart'  => $tpstart,    // 1680343200                           //.
+            'tpend'    => $tpend,      // 1680348600                           //.
+        );
+        $dates[] = $date;
+
+        $index++;
+    }
+
+    // Extend return object
+    $exam->_num_dates = $numdates;
+    $exam->_dates = $dates;
+
+    //echo '<pre>'.print_r($exam, true).'</pre>';
+    return $exam;
+}

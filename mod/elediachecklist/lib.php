@@ -197,11 +197,6 @@ function elediachecklist_add_instance($checklist) {
     }
 
     return $checklist->id;
-
-    // Note:                                                               //.
-    // Language pack for plugin 'block_eledia_adminexamdates':             //.
-    // 'checklistlink' -> mod/elediachecklist/tabtermin.php?id=106&examid= //.
-    //                    106 = course_modules.id of this instance         //.
 }
 
 /**

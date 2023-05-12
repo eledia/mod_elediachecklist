@@ -38,59 +38,6 @@ $checklist = optional_param('checklist', 0, PARAM_INT);
 
 $url = new moodle_url('/mod/elediachecklist/tabprobleme.php');
 
-/**
-Hallo Norbert,
-
-Herr Fromman hat gerade mit mir gesprochen - es gibt folgendes Problem in der Checkliste:
-
-die Daten der Checkliste werden falsch berechnet. Diese müssen die Wochenendetage (Sa+So) sowie die Feiertage immer überspringen. Kannst du da bitte diese Tage bitte in der BErechnung mit drauf addieren, damit die ausgelassen werden?
-
-Gruß Rene
-
-Tipps zur Umsetzung:
-
-eventuell sa+so  so prüfen?
-if(strftime("%u", $time) == 6 || strftime("%u", $time) == 7)
-
-die Feiertage werden in dem Block settings 'holidays' erfasst und können so ausgelesen werden:
-$holidaytime ist dann der unixtimestamp eines Feiertages, du solltest prüfen, ob der auch Wochenende ist und in dem gesuchten Zeitraum liegt.
-(bitte dran denken, dass Feiertage und Wochenenden der gleiche Tag sein kann)
-
-$holidaylines = preg_split('/\r\n|\r|\n/', get_config('block_eledia_adminexamdates', 'holidays'));
-$holidays = [];
-foreach ($holidaylines as $holidayline) {
-$holidayitems = explode('|', $holidayline);
-if (($holidaytime = strtotime($holidayitems[0])) && !empty($holidayitems[1])) {
-$holidays[$holidaytime] = trim($holidayitems[1]);
-}
-}
-https://kassel.elearning-home.de/admin/settings.php?section=blocksettingeledia_adminexamdates
-2023-01-31
-01.01.2022|Neujahr
-15.04.2022|Karfreitag
-18.04.2022|Ostermontag
-01.05.2022|Tag der Arbeit
-26.05.2022|Christi Himmelfahrt
-06.06.2022|Pfingstmontag
-16.06.2022|Fronleichnam
-03.10.2022|Tag der Deutschen Einheit
-25.12.2022|Weihnachten
-26.12.2022|Weihnachten
-01.01.2023|Neujahr
-07.04.2023|Karfreitag
-10.04.2023|Ostermontag
-01.05.2023|Tag der Arbeit
-18.05.2023|Christi Himmelfahrt
-29.05.2023|Pfingstmontag
-08.06.2023|Fronleichnam
-03.10.2023|Tag der Deutschen Einheit
-25.12.2023|Weihnachten
-26.12.2023|Weihnachten
- */
-//$holidays = elediachecklist_get_holidays();
-//echo '<pre>'.print_r($holidays, true).'</pre>'."\n";
-
-
 
 $userid = 0;
 

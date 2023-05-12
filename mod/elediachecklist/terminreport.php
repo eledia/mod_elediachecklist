@@ -156,18 +156,13 @@ class MyTable {
 
             //$href = 'tabtermin.php?id='.$date->id.'&examid='.$date->examid;
             $href = 'tabtermin.php?eledia='.$date->checklist.'&examid='.$date->examid;
-            // DATE_FORMAT(DATE_ADD(FROM_UNIXTIME(floor((SELECT examtimestart FROM {eledia_adminexamdates} AS exam WHERE exam.id = " . $me->id . "))), INTERVAL item.duetime DAY),'%d.%m.%Y') AS TopicDate
             $tp = $date->tp_examtimestart + (60 * 60 * 24 * $date->duetime);
             $topicdate = date('d.m.Y', $tp);
             $topicdatetp = $tp;
 
             $text .= \html_writer::tag('td', $date->examname)."\n";
             $text .= \html_writer::tag('td', $sclname)."\n";
-            //$text .= \html_writer::tag('td', $date->checked);
-            //$text .= \html_writer::tag('td', "<a href='tabtermin.php?id=" . get_string('checklist_id', 'elediachecklist') . "&examid=" . $date->examid . "'>" . $date->topic . "</a>");
-            //$text .= \html_writer::tag('td', "<a href='".$href."'>" . $date->topic . "</a>");
             $text .= \html_writer::tag('td', '<a href="'.$href.'">'.$date->topic.'</a>')."\n";
-            //$text .= \html_writer::tag('td', $date->topicdate);
             $text .= \html_writer::tag('td', $topicdate)."\n";
 
             // hidden -> scl_id
@@ -309,7 +304,6 @@ if (!empty($confirmexamdate)) {
         $arrsclname[$userid] = trim($user->firstname.' '.$user->lastname);
     }
 
-    // custom-select custom-select-sm form-control mr-1 // custom-select custom-select-sm form-control mr-1
     echo '<select size="1" id="sclid" name="sclid" class="custom-select form-control">';
     echo '<option value="0">&nbsp;</option>';
     foreach($arrsclname as $id => $name) {
@@ -321,14 +315,8 @@ if (!empty($confirmexamdate)) {
     echo '</tr>';
     echo '</tbody></table>';
 
-    // ???
-    //echo block_eledia_adminexamdates\util::getexamdateitems();
-
-    // ???
     $urleditsingleexamdate = new moodle_url('/blocks/eledia_adminexamdates/editsingleexamdate.php', ['blockid' => '']);
-    //echo \html_writer::start_tag('div', array('style' => 'border:1px solid red;'))."\n";
     echo $OUTPUT->box($OUTPUT->single_button($urleditsingleexamdate, '', 'post'),'d-none','editsingleexamdate')."\n";
-    //echo \html_writer::end_tag('div')."\n";
 
     //echo '<link rel="stylesheet" type="text/css" href="datatables/datatables.min.css"/>';
     echo '<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css"/>'."\n";
@@ -342,8 +330,6 @@ if (!empty($confirmexamdate)) {
     echo '<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/datetime/1.1.1/js/dataTables.dateTime.min.js"></script>'."\n";
 
     echo MyTable::gettermindata();
-    //echo block_eledia_adminexamdates\util::getexamdatetable();
-    $checklistlink = get_string('checklistlink','block_eledia_adminexamdates');
     echo '<script type="text/javascript">';
     echo '
         // Warum wurden die hier mal deklariert?
@@ -520,13 +506,3 @@ if (!empty($confirmexamdate)) {
 
 echo $OUTPUT->footer();
 
-
-//$("#examdatestable tbody").on( "click", "tr.group", function () {
-//    var currentOrder = table.order()[0];
-//    if ( currentOrder[0] === groupColumn && currentOrder[1] === "asc" ) {
-//        table.order( [ groupColumn, "desc" ] ).draw();
-//    }
-//    else {
-//        table.order( [ groupColumn, "asc" ] ).draw();
-//    }
-//} );

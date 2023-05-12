@@ -112,15 +112,15 @@ $string['checkeditemsdeleted'] = 'Checked items deleted';
 $string['checklist'] = 'checklist';
 $string['pluginadministration'] = 'Checklist administration';
 
-$string['checklist:addinstance'] = 'Add a new checklist';
-$string['checklist:edit'] = 'Create and edit checklists';
-$string['checklist:emailoncomplete'] = 'Receive completion emails';
-$string['checklist:preview'] = 'Preview a checklist';
-$string['checklist:updatelocked'] = 'Update locked checklist marks';
-$string['checklist:updateother'] = 'Update students\' checklist marks';
-$string['checklist:updateown'] = 'Update your checklist marks';
-$string['checklist:viewmenteereports'] = 'View mentee progress (only)';
-$string['checklist:viewreports'] = 'View students\' progress';
+$string['elediachecklist:addinstance'] = 'Add a new checklist';
+$string['elediachecklist:edit'] = 'Create and edit checklists';
+$string['elediachecklist:emailoncomplete'] = 'Receive completion emails';
+$string['elediachecklist:preview'] = 'Preview a checklist';
+$string['elediachecklist:updatelocked'] = 'Update locked checklist marks';
+$string['elediachecklist:updateother'] = 'Update students\' checklist marks';
+$string['elediachecklist:updateown'] = 'Update your checklist marks';
+$string['elediachecklist:viewmenteereports'] = 'View mentee progress (only)';
+$string['elediachecklist:viewreports'] = 'View students\' progress';
 $string['checklistautoupdate'] = 'Allow checklists to automatically update';
 
 $string['checklistfor'] = 'Checklist for';
@@ -443,5 +443,6 @@ $string['data_instance_id_problems_description'] = 'Die Problemdatenbank-Instanz
 
 $string['data_field_id_default_title'] = 'Problemdatenbank, Klausurbezeichnung';
 $string['data_field_id_default_description'] = 'Welches Problemdatenbank-Feld soll beim Hinzufügen eines Problems mit der '
-        .'Klausurbezeichnung vorbelegt sein?';
+.'Klausurbezeichnung vorbelegt sein?';
 
+$string['schreibzeit'] = 'Writing time';

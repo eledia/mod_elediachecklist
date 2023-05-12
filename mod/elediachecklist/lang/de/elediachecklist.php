@@ -162,3 +162,4 @@ $string['data_field_id_default_title'] = 'Problemdatenbank, Klausurbezeichnung';
 $string['data_field_id_default_description'] = 'Welches Problemdatenbank-Feld soll beim Hinzufügen eines Problems mit der '
 .'Klausurbezeichnung vorbelegt sein?';
 
+$string['schreibzeit'] = 'Schreibzeit';
